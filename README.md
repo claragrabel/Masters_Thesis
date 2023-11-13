@@ -4,4 +4,4 @@ On my master's thesis about gene plasticity.
 
 ## Page Index
 
-* (clean_reads)[./TFM_project]
+* [clean_reads](./TFM_project)
