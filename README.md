@@ -1,7 +1,3 @@
 # TFM
 
-On my master's thesis about gene plasticity.
-
-## Page Index
-
-* [clean_reads](./TFM_project)
+This is the link to my webpage: https://claragrabel.github.io/TFM/
