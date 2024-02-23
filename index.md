@@ -7,9 +7,6 @@ description: "Welcome to my Master's Thesis Project on Spadefoot Toads RNAseq An
 permalink: /
 ---
 
-
-## Clara Granado Beltrán
-
 # Abstract
 
 This study investigates the genetic expression patterns of toads from different regions (Seville and Madrid) and water levels (high water and low water) to understand regional adaptations and phenotypic plasticity.
@@ -24,23 +21,27 @@ Welcome to my Master's Thesis project page! Here, I document my journey in explo
 
 ![Cover Image](/assets/cover.jpg)
 
-5. **Sequence Quality Control**
+0. **Exprimental Design and Data Obtention**
    ![Sequence Quality Control](/assets/sequence-quality-control.jpg)  
    [More about Sequence Quality Control](/workflow#sequence-quality-control)
 
-6. **Alignment and Mapping**
+1. **Sequence Quality Control**
+   ![Sequence Quality Control](/assets/sequence-quality-control.jpg)  
+   [More about Sequence Quality Control](/workflow#sequence-quality-control)
+
+2. **Contaminants Removal** (rRNA removal, bbsplit)
+   ![Sequence Quality Control](/assets/sequence-quality-control.jpg)  
+   [More about Sequence Quality Control](/workflow#sequence-quality-control)
+
+3. **Quasi-Mapping and Quantification** (Salmon)
    ![Alignment and Mapping](/assets/alignment-mapping.jpg)  
    [More about Alignment and Mapping](/workflow#alignment-mapping)
 
-7. **Quantification of Gene Expression**
-   ![Gene Expression Quantification](/assets/gene-expression-quantification.jpg)  
-   [More about Gene Expression Quantification](/workflow#gene-expression-quantification)
-
-8. **Differential Expression Analysis**
+4. **Differential Expression Analysis**
    ![Differential Expression Analysis](/assets/differential-expression-analysis.jpg)  
    [More about Differential Expression Analysis](/workflow#differential-expression-analysis)
 
-9. **Functional Enrichment Analysis**
+5. **Functional Enrichment Analysis**
    ![Functional Enrichment Analysis](/assets/functional-enrichment-analysis.jpg)  
    [More about Functional Enrichment Analysis](/workflow#functional-enrichment-analysis)
 
