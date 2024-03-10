@@ -1,12 +1,4 @@
 
----
-layout: default
-title: Home
-nav_order: 1
-description: "Welcome to my Master's Thesis Project on Spadefoot Toads RNAseq Analysis"
-permalink: /
----
-
 # Abstract
 
 This study investigates the genetic expression patterns of toads from different regions (Seville and Madrid) submitted to different water levels (high water and low water) to understand regional adaptations, adaptability to dessication and phenotypic plasticity.
