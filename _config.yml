@@ -20,9 +20,10 @@ navbar_links:
     url: "/results"
   - title: "About"
     url: "/about"
+# Footer settings
 footer:
   links:
     - title: "GitHub Repository"
-      url: [Your GitHub Repository URL]
+      url: [(https://github.com/claragrabel/Masters_Thesis]
     - title: "Contact"
-      url: "mailto:[Your Email]"
+      url: "mailto:[claragrabel@hotmail.com]"
