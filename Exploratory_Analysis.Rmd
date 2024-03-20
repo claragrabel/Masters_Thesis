@@ -1,0 +1,441 @@
+---
+title: "Exploratory_Data_analysis"
+author: "clagrabel"
+date: "2024-02-27"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+We load and store the data into a variable called txi.
+
+```{r}
+txi<-readRDS("salmon_gene_counts.rds")
+```
+
+We will load the libraries needed for this script.
+
+```{r}
+# use pacman to load libraries
+pacman::p_load(tidyverse, DESeq2, pheatmap)
+```
+
+
+# Exploring the data
+
+```{r, include=FALSE}
+class(txi)
+summary(txi)
+lapply(X=txi, FUN=head)
+```
+
+The txi object is a list with 4 entries, three matrices (abundance, counts, length) and 1 character vector (countsFromAbundance).
+
+The dimensions of each matrix are 106236 rows as the genes and 48 columns as the sample_id. This means the transcripts have been aggregated into 106236 genes.
+
+```{r}
+dim(txi$abundance)
+```
+
+Here is a brief description of each element in the txi object: 
+* Counts: Estimate of the number of reads mapping to each transcript.
+* Abundance: Normalized counts in Transcripts Per Million (TPM). This means that per sample, the total counts add up to 1 million. Raw counts cannot be compared across sample_id because each library may vary slightly in terms of the total number of reads, differences in sequencing bias and difference in transcript lengths. 
+
+```{r}
+apply(X=txi$abundance, FUN=sum, MARGIN = 2)
+```
+
+* Length: Effective length of the target transcript.
+* countsFromAbundance: A character vector indicating whether counts were taken directly from the quantifier (salmon) or whether they have been calculated from the abundances by tximport. Default is no (counts are from salmon).
+
+
+Moreover, we can appreciate that the two first rows correspond to transcripts that mapped against mithocondrial RNA and non-coding RNA (nuclear ribosomal RNA) decoys introduced in the reference transcriptome. 
+
+We will remove these rows.
+
+_Regarding the non-coding RNA, we can see high counts in the counts matrix (without any normalization). Non-coding RNA molecules are abundant in the cell and are often not fully removed during RNA purification processes. All the transcripts were aggregated into one only "gene" or row called nrRNA, therefore showing a higher length  in the length matrix. Longer transcripts are expected to garner more reads simply because they provide more binding sites for the sequencing reads. Thus, in the abundance matrix their abundance is adjusted downward to account for their length._
+
+
+# Filtering out mtRNA and nrRNA
+
+We have to filter out the first two rows of every matrix. These two rows correspond to the mitochondrial RNA and nuclear ribosomal RNA that mapped against the decoys introduced in the reference transcriptome.
+
+Moreover, there are genes named with the prefix "PECUL23nc" that are also non-coding. We have to find these genes and remove them too.
+
+```{r, include=FALSE}
+
+txi_filtered <- lapply(txi, function(x) {
+  # Check if x is a matrix or a data frame
+  if (is.matrix(x) || is.data.frame(x)) {
+    # Identify rows whose names contain "PECUL23nc"
+    rows_to_remove <- grep("PECUL23nc", rownames(x))
+    # Combine the rows to remove: the first two rows and rows with specific names
+    all_rows_to_remove <- unique(c(1, 2, rows_to_remove))
+    # Remove the specified rows
+    return(x[-all_rows_to_remove, ])
+  } else {
+    # If not, return x unchanged
+    return(x)
+  }
+})
+
+# Now, each matrix in the txi list has had the first two rows removed, all the rows containing non-coding RNA removed, and the countsFromAbundance element was not changed.
+
+lapply(X=txi_filtered, FUN=head)
+dim(txi_filtered$abundance)
+dim(txi_filtered$counts)
+dim(txi_filtered$length)
+
+```
+
+
+# Re-formatting
+
+Changing the names of the columns for the matrices in the txi object.
+
+```{r, include=FALSE}
+
+# install.packages("Hmisc")
+library(Hmisc)
+
+# Creating a vector containing the new names for the samples
+
+samples_by_replicate <- sort(unique(Cs(Bui1H, Bui1H, Bui1L, Bui1L, Bui2H, Bui2H, Bui2L, Bui2L, Bui3H, Bui3H, Bui3L, Bui3L, Bui4H, Bui4H, Bui4L, Bui4L, Can1H, Can1H, Can1L, Can1L, Can2H, Can2H, Can2L, Can2L, Can3H, Can3H, Can3L, Can3L, Can4H, Can4H, Can4L, Can4L, Esp1H, Esp1H, Esp1L, Esp1L, Esp2H, Esp2H, Esp2L, Esp2L, Esp3H, Esp3H, Esp3L, Esp3L, Esp4H, Esp4H, Esp4L, Esp4L, Jab1H, Jab1H, Jab1L, Jab1L, Jab2H, Jab2H, Jab2L, Jab2L, Jab3H, Jab3H, Jab3L, Jab3L, Jab4H, Jab4H, Jab4L, Jab4L, Lla1H, Lla1H, Lla1L, Lla1L, Lla2H, Lla2H, Lla2L, Lla2L, Lla3H, Lla3H, Lla3L, Lla3L, Lla4H, Lla4H, Lla4L, Lla4L, Tur1H, Tur1H, Tur1L, Tur1L, Tur2H, Tur2H, Tur2L, Tur2L, Tur3H, Tur3H, Tur3L, Tur3L, Tur4H, Tur4H, Tur4L, Tur4L)))
+
+
+# Converting the vector's elements into characters using Cs from the package Hmisc, which embeds the terms in quotation marks, selecting only unique names and sorting alphabetically.
+
+
+# Checking the resulting names variable
+samples_by_replicate
+class(samples_by_replicate)
+length(samples_by_replicate)
+
+# If the length of the names vector equals the number of columns of the matrices, then:
+
+if(length(samples_by_replicate) == ncol(txi_filtered$counts)) {
+  # Replace column names for counts, abundance, and length matrix
+  colnames(txi_filtered$counts) <- samples_by_replicate
+  colnames(txi_filtered$abundance) <- samples_by_replicate
+  colnames(txi_filtered$length) <- samples_by_replicate
+} else {
+  stop("The length of the samples vector does not match the number of sample_id in the txi object.")
+}
+
+#class(txi_filtered)
+
+```
+
+We will group all the replicates for a specific condition together, grouping all replicates for high water level and all replicates for low water in the same population.
+
+```{r}
+
+sample_id<-Cs(Bui1H, Bui2H, Bui3H, Bui4H, Bui1L, Bui2L, Bui3L, Bui4L, Can1H, Can2H, Can3H, Can4H, Can1L, Can2L, Can3L, Can4L, Tur1H, Tur2H, Tur3H, Tur4H, Tur1L, Tur2L, Tur3L, Tur4L, Esp1H, Esp2H, Esp3H, Esp4H, Esp1L, Esp2L, Esp3L, Esp4L, Jab1H, Jab2H, Jab3H, Jab4H, Jab1L, Jab2L, Jab3L, Jab4L, Lla1H, Lla2H, Lla3H, Lla4H, Lla1L, Lla2L, Lla3L, Lla4L)
+
+length(sample_id)
+
+
+if(length(sample_id) == ncol(txi_filtered$counts)) {
+  # Reorder the columns for counts, abundance, and length matrices within the list
+  txi_filtered$counts <- txi_filtered$counts[, sample_id, drop = FALSE]
+  txi_filtered$abundance <- txi_filtered$abundance[, sample_id, drop = FALSE]
+  txi_filtered$length <- txi_filtered$length[, sample_id, drop = FALSE]
+} else {
+  stop("The length of the sample_id vector does not match the number of columns in the txi_filtered$counts matrix.")
+}
+
+
+class(txi_filtered)
+lapply(X=txi_filtered, FUN=head)
+
+```
+
+
+# Creating the Experimental Design
+
+```{r}
+
+# Creating the vectors for the conditions.
+
+waterLevel <- rep(c(rep("high",4), rep("low",4)), 6)
+region <- c(rep("Central_Spain", 24), rep("Southern_Spain", 24))
+populations <- c(rep("Buitrago",8), rep("Canencia",8), rep("Turrubuelo",8), rep("Espajosas",8), rep("Jabata",8), rep("Llano",8))
+
+
+# Ensuring that all columns are treated as factors.
+
+waterLevel <- factor(waterLevel, levels=c("high", "low"))
+region <- factor(region, levels=c("Central_Spain", "Southern_Spain"))
+populations <- factor(populations, levels=c("Buitrago", "Canencia", "Turrubuelo", "Espajosas", "Jabata", "Llano"))
+
+class(waterLevel)
+class(region)
+class(populations)
+
+
+# Building the data frame
+
+exp_design<-data.frame(sample_id, waterLevel, region, populations) 
+colnames(exp_design)<-c("sample_id", "waterLevel", "region", "populations") 
+# row.names(exp_design)<-NULL
+
+# Visualizing the resulting data frame
+
+exp_design
+
+write.table(exp_design, file="exp_design.csv", sep=",", row.names = F, col.names = T)
+```
+
+# Exploratory Analysis
+
+Let's have a look at the distribution of the data.
+We will use a logarithm transformation to better visualize the data. This way, we will not include zero counts, but these are not that relevant to visualize the data distribution.
+
+The X-axis indicates the order of magnitude of the abundances, while the Y-axis (frequency) indicates the amount of genes/transcripts that have that specific abundance.
+
+
+Visualize for the first sample.
+
+```{r}
+hist(log10(txi_filtered$abundance[,1]), breaks=50, main = "Abundance Distribution for Sample 1 - Bui1L", xlab = "log(abundances)", ylab = "Frequency")
+```
+
+Visualization of all sample_id's abundances.
+
+```{r}
+# a more detailed plot with the tidyverse:
+txi_filtered$abundance %>%
+  # 
+  as_tibble(rownames = "transcript") %>%
+  pivot_longer(-transcript, names_to="sample_id", values_to="TPM") %>%
+  ggplot(aes(x=TPM)) +
+  geom_histogram() +
+  ylab("number of transcripts") +
+  scale_x_log10() +
+  facet_wrap(~sample_id)
+```
+
+We can see that the log abundance is fairly normally distributed.
+
+
+We will store the counts matrix that will be used from now on in the variable "counts_matrix)
+
+```{r}
+counts_matrix <- txi_filtered$counts
+```
+
+
+# PCA
+
+To ensure that the biological replicates exhibit consistent behavior and group accordingly, we will perform a Principal Component Analysis (PCA) on the normalized counts.
+However, PCA identifies the directions (principal components) along which the variance in the data is maximized, hence it is sensitive to the homoskedasticity of the variables. Homoskedasticity means that the variance of one variable (e.g., gene expression levels) is constant (does not depend on the mean) across all levels of another variable (e.g., different experimental conditions). This would mean that genes with high/low expression would have the same variance across sample_id.
+
+This is not the case for RNA-seq data, which are typically heteroskedastic.
+Therefore, we will transform our data to avoid the results of the PCA being influenced by a few highly expressed genes. We will follow the underlying steps:
+
+* Filtering out any genes that are non-variable. i.e. genes whose expression is the same across all biological sample_id.
+* Transform the counts variable to improve heteroskedasticity. Here we will use a variance stabilizing transformation.
+* Transpose the matrix so that we have sample_id as the rows and genes as the columns (we want to treat each gene as if it is a variable in our multivariate analysis).
+* Scaling and centering the data.
+* Plot the first two components, labeling points with relevant biological information.
+
+## Variance Stabilizing Transformation 
+
+```{r}
+
+# VST requires integers
+
+vst_counts<- counts_matrix %>%
+  as.data.frame() %>%
+  mutate_all(as.integer) %>%
+  as.matrix() %>%
+  vst()
+  
+# Remove 0-variance genes
+vst_counts<-vst_counts[apply(vst_counts, 1, var) != 0,]
+
+```
+
+## PCA plotting
+
+```{r}
+# Perform PCA on transpose, scaled, centered data
+pca<- prcomp(t(vst_counts),scale=T, center=T)
+
+
+
+## add metadata and plot
+pca$x %>%
+  as_tibble(rownames = "sample_id") %>%
+  left_join(exp_design) %>% # add the experimental design information
+  ggplot(aes(x=PC1, y=PC2, color=waterLevel, shape=region)) +
+  labs(x=paste0("PC1 (", summary(pca)$importance["Proportion of Variance",1]*100, "%)"),
+       y=paste("PC2 (", summary(pca)$importance["Proportion of Variance",2]*100, "%)")) + 
+  geom_point(size=3)
+```
+
+Most of the variance is explained by region (separation along PC1). PC1 explains the 14.54% of the variance of the data.
+The treatment (water level) effect is not clear.
+
+
+We will repeat the process separately for each specific region in order to check for the variance within region.
+
+
+```{r}
+
+vst_counts_south<- counts_matrix %>%
+  as.data.frame() %>%
+  select(contains(c("Esp","Jab", "Lla"))) %>%
+  mutate_all(as.integer) %>%
+  as.matrix() %>%
+  vst()
+  
+# remove 0-variance genes 
+vst_counts_south<-vst_counts_south[apply(vst_counts_south, 1, var) != 0,]
+
+# perfomr PCA on TRANSPOSED scaled, centred data
+pca_south<- prcomp(t(vst_counts_south),scale.=T, center=T)
+
+## add metadata and plot
+pca_south$x %>%
+  as_tibble(rownames = "sample_id") %>%
+  left_join(exp_design) %>%
+  ggplot(aes(x=PC1, y=PC2, color=waterLevel)) +
+  geom_point(size=3)
+```
+
+There might be a slight separation in PC2 for Southern Spain populations, however, it is not very notable.
+
+
+```{r}
+
+vst_counts_central<- counts_matrix %>%
+  as.data.frame() %>%
+  select(contains(c("Bui","Can", "Tur"))) %>%
+  mutate_all(as.integer) %>%
+  as.matrix() %>%
+  vst()
+  
+# remove 0-variance genes 
+vst_counts_central<-vst_counts_central[apply(vst_counts_central, 1, var) != 0,]
+
+# perfomr PCA on TRANSPOSED scaled, centred data
+pca_central<- prcomp(t(vst_counts_central),scale.=T, center=T)
+
+## add metadata and plot
+pca_central$x %>%
+  as_tibble(rownames = "sample_id") %>%
+  left_join(exp_design) %>%
+  ggplot(aes(x=PC1, y=PC2, color=waterLevel)) +
+  geom_point(size=3)
+```
+
+There is even less separation for the Central Spain populations.
+
+Therefore, we will mainly focus on the study of the differential gene expression between regions.
+
+
+```{r}
+pca$x %>%
+  as_tibble(rownames = "sample_id") %>%
+  left_join(exp_design) %>% # add the experimental design information
+  ggplot(aes(x=PC1, y=PC2, color=waterLevel, shape=populations)) +
+  labs(x=paste0("PC1 (", summary(pca)$importance["Proportion of Variance",1]*100, "%)"),
+       y=paste("PC2 (", summary(pca)$importance["Proportion of Variance",2]*100, "%)")) + 
+  geom_point(size=3)
+```
+
+
+
+# Heatmaps
+
+Heatmaps can also help visualize the clustering of the samples, but they can add one extra layer of information: the clustering of genes. 
+
+## Heatmap by samples
+
+We have to manually calculate this distances first, and then use those distances to inform the heatmap.
+
+
+```{r}
+# get sample-to-sample distance
+
+sample_dist <- dist(t(vst_counts))
+
+# convert to matrix
+sample_dist_matrix <- as.matrix(sample_dist)
+
+annotation_df <- data.frame(waterLevel = exp_design$waterLevel,
+                            region = exp_design$region)
+
+# Now, set the row names of 'annotation_df' using the 'sample_id' column from 'exp_design'.
+row.names(annotation_df) <- exp_design$sample_id
+
+# Use 'annotation_df' for both row and column annotations in 'pheatmap'.
+pheatmap(sample_dist_matrix,
+         annotation_col = annotation_df,
+         annotation_row = annotation_df)
+
+pheatmap(sample_dist_matrix,
+         annotation_col = annotation_df,
+         annotation_row = annotation_df, cluster_rows = FALSE, cluster_cols = FALSE)
+```
+
+With this heatmap, we would conclude something analogous to the PCA: there is greater dissimilarity between regions than between water level. 
+
+
+## Heatmap by genes
+
+It is interesting to check whether there is clustering of gene expression for specific genes/transcripts. Because there are thousands of genes, we may want to only focus on genes that are particularly variable in their expression across the samples.
+
+```{r}
+# Sort the rows in vst matrix by the row-wise variance, and keep only the 500 most variable genes
+
+var_genes <- apply(vst_counts,MAR=1, FUN=var) %>%
+  enframe() %>%
+  arrange(desc(value)) %>%
+  slice_head(n=500) %>%
+  pull(name)
+
+head(var_genes) # list of genes we want to keep
+
+vst_subset<-vst_counts[var_genes, ]
+
+# check to see we really only have 500 genes
+dim(vst_subset)
+
+pheatmap(vst_subset,
+         scale = "row",
+         cluster_rows=T, show_rownames=F,
+         cluster_cols=T, show_colnames = T,
+         annotation_col=data.frame(exp_design[,c("sample_id","waterLevel","region")], row.names = "sample_id"))
+
+```
+
+
+
+```{r}
+# get sample-to-sample distance
+
+sample_dist <- dist(t(vst_counts))
+
+# convert to matrix
+sample_dist_matrix <- as.matrix(sample_dist)
+
+annotation_df <- data.frame(waterLevel = exp_design$waterLevel,
+                            region = exp_design$region, populations=exp_design$populations)
+
+# Now, set the row names of 'annotation_df' using the 'sample_id' column from 'exp_design'.
+row.names(annotation_df) <- exp_design$sample_id
+
+# Use 'annotation_df' for both row and column annotations in 'pheatmap'.
+pheatmap(sample_dist_matrix,
+         annotation_col = annotation_df,
+         annotation_row = annotation_df)
+
+pheatmap(sample_dist_matrix,
+         annotation_col = annotation_df,
+         annotation_row = annotation_df, cluster_rows = FALSE, cluster_cols = FALSE)
+```
+

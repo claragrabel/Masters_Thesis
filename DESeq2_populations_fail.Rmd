@@ -1,0 +1,127 @@
+---
+title: "DESeq2_populations"
+author: "clagrabel"
+date: "2024-03-18"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Loading the necessary libraries.
+
+```{r}
+pacman::p_load(tidyverse, DESeq2)
+```
+
+
+# DOUBT
+
+I could not get the interaction terms for all populations because it takes one of the  populations as the baseline.
+
+Also, I was unable to get the interaction term between population and region. I thought this would provide me with information about the uniformity between populations in the same region.
+
+## Interaction term between Population and Water Level
+
+From here, we can also get the effect of Population independently.
+
+```{r}
+dds_water_pop <- DESeqDataSetFromTximport(
+  txi = txi_filtered, 
+  colData = exp_design,
+  design = ~ waterLevel * populations)
+
+dds_water_pop <- dds_water_pop[rowSums(counts(dds_water_pop)) >= 10,]
+dds_water_pop <- DESeq(dds_water_pop)
+resultsNames(dds_water_pop)
+
+```
+
+```{r eval=FALSE, include=FALSE}
+
+# Storing the interaction terms between each population and the water level
+
+# res_water_Can<-results(dds_water_pop, name ="waterLevellow.populationsCanencia")
+# summary(res_water_Can)
+# 
+# res_water_Lla<-results(dds_water_pop, name ="waterLevellow.populationsLlano")
+# summary(res_water_Lla)
+# 
+# res_water_Bui<-results(dds_water_pop, contrast=list(c("waterLevellow.populationsBuitrago")))
+```
+
+
+
+```{r eval=FALSE, include=FALSE}
+
+# Trying to get the interaction between region and population. 
+
+txi_south <- lapply(txi_filtered, function(x) {
+  # Check if x is a matrix or a data frame
+  if (is.matrix(x) || is.data.frame(x)) {
+    # We want to maintain columns that belong to the central region, so we will remove those from the southern region.
+    patterns <- c("Can", "Tur", "Bui")
+    pattern <- paste(patterns, collapse = "|")
+    cols_to_remove <- grep(pattern, colnames(x))
+    # Remove the specified rows
+    return(x[, -cols_to_remove])
+  } else {
+    # If not, return x unchanged
+    return(x)
+  }
+})
+
+dim(txi_south$counts)
+
+exp_south <- exp_design[region=="Southern_Spain", ]
+
+dds_south_pop <- DESeqDataSetFromTximport(
+  txi = txi_south, 
+  colData = exp_south,
+  design = ~ populations * region)
+
+dds_south_pop <- dds_south_pop[rowSums(counts(dds_south_pop)) >= 10,]
+dds_south_pop <- DESeq(dds_south_pop)
+
+resultsNames(dds_south_pop)
+```
+
+
+
+```{r eval=FALSE, include=FALSE}
+
+# Trying to get the interaction term between population and region 
+
+txi_central <- lapply(txi_filtered, function(x) {
+  # Check if x is a matrix or a data frame
+  if (is.matrix(x) || is.data.frame(x)) {
+    # We want to maintain columns that belong to the central region, so we will remove those from the southern region.
+    patterns <- c("Lla", "Esp", "Jab")
+    pattern <- paste(patterns, collapse = "|")
+    cols_to_remove <- grep(pattern, colnames(x))
+    # Remove the specified rows
+    return(x[, -cols_to_remove])
+  } else {
+    # If not, return x unchanged
+    return(x)
+  }
+})
+
+dim(txi_central$counts)
+
+#table(exp_central$populations)
+#length(exp_central$populations)
+
+exp_central <- exp_design[region=="Central_Spain", ]
+exp_central
+
+dds_central_pop <- DESeqDataSetFromTximport(
+  txi = txi_central, 
+  colData = exp_central,
+  design = ~ populations)
+
+dds_central_pop <- dds_central_pop[rowSums(counts(dds_central_pop)) >= 10,]
+dds_central_pop <- DESeq(dds_central_pop)
+resultsNames(dds_central_pop)
+```
