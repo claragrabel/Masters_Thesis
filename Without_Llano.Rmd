@@ -186,6 +186,8 @@ exp_test <- exp_design %>%
               filter(!row_number() %in% llano_rows)
 exp_test
 ```
+
+
 Running DESeq2.
 
 ```{r}
@@ -193,5 +195,145 @@ dds_test <- DESeqDataSetFromTximport(
   txi = txi_test, 
   colData = exp_test,
   design = ~ waterLevel * region)
+
+dds_test <- DESeq(dds_test)
+```
+
+Storing the results.
+
+```{r}
+res_test<- results(dds_test)
+resultsNames(dds_test)
+```
+
+# Water Level: low vs high, independent of region
+
+```{r}
+res_test_waterLevel <- results(dds_test, contrast=c("waterLevel", "low", "high"))
+
+summary(res_test_waterLevel, alpha=0.05)
+
+```
+
+According to the results, there would be 48 genes which are up-regulated in low water level versus high water level, and 5 which are down-regulated.
+
+
+# Region: Southern Spain vs Central Spain, independent of water level
+
+```{r}
+res_test_region<-results(dds_test, contrast=c("region", "Southern_Spain", "Central_Spain"))
+
+summary(res_test_region, alpha=0.05)
+```
+
+There appear to be 1440 genes up-regulated, 1825 genes down-regulated.
+
+# Interaction term: interaction between water level and region
+
+```{r}
+res_test_interaction <- results(dds_test, name="waterLevellow.regionSouthern_Spain", alpha = 0.05)
+
+summary(res_test_interaction)
+```
+1 gene up-regulated, 5 genes down-regulated.
+
+
+# Specific comparisons for region and water level
+
+In order to visualize the all the comparisons between the conditions (waterLevel and regions) without acquiring information about the interaction between the factors, we will make comparisons between factors: 
+
+* Combine the factors of interest into a single factor with all combinations of the original factors
+* Change the design to include just this factor
+
+
+```{r}
+
+group_test<-factor(paste0(dds_test$waterLevel, dds_test$region))
+group_test_design <- cbind(exp_test, group = group_test)
+group_test_design
+
+colnames(group_test_design) <- c("sample_id","waterLevel", "region", "population", "group")
+
+#write.table(group_design, file="group_design.csv", sep=",", row.names = F)
+
+dds_test_group <- DESeqDataSetFromTximport(
+  txi = txi_test, 
+  colData = group_test_design,
+  design = ~ group
+)
+
+dds_test_group
+
+dds_test_group <- dds_test_group[rowSums(counts(dds_test_group)) >= 10,]
+dds_test_group <- DESeq(dds_test_group)
+
+```
+
+Let's check the comparisons:
+
+```{r}
+resultsNames(dds_test_group)
+```
+
+## High water in Southern Spain region vs Central Spain
+
+```{r}
+test_hS_hC<-results(dds_test_group, contrast=c("group", "highSouthern_Spain", "highCentral_Spain"))
+
+summary(test_hS_hC, alpha=0.5)
+```
+
+## Low water in Southern Spain region vs Central Spain
+
+
+```{r}
+test_lS_lC<-results(dds_test_group, contrast=c("group", "lowSouthern_Spain", "lowCentral_Spain"))
+
+summary(test_lS_lC, alpha=0.5)
+```
+
+## Southern Spain region high and low water
+
+```{r}
+test_lS_hS<-results(dds_test_group, contrast=c("group", "lowSouthern_Spain", "highSouthern_Spain"))
+
+summary(test_lS_hS, alpha=0.5)
+```
+
+## Central Spain region high and low water
+
+
+```{r}
+test_lC_hC<-results(dds_test_group, contrast=c("group", "lowCentral_Spain", "highCentral_Spain"))
+
+summary(test_lC_hC, alpha=0.5)
+```
+
+
+
+# Exporting the results
+
+```{r}
+
+# Exporting them all as a list object and save it as an .rds file
+saveRDS(list(
+          waterLevel = res_waterLevel,
+          region = res_region,
+          interaction = res_interaction,
+          lS_lC = res_lS_lC,
+          hS_hC = res_hS_hC,
+          lS_hS = res_lS_hS,
+          lC_hC = res_lC_hC,
+          hBui_lBui = res_hBui_lBui,
+          hCan_lCan = res_hCan_lCan,
+          hTur_lTur = res_hTur_lTur,
+          hEsp_lEsp = res_hEsp_lEsp,
+          hLla_lLla = res_hLla_lLla,
+          hJab_lJab = res_hJab_lJab),
+          file = "./results/deseq2_results_test.rds")
+
+
+# export the DESeq2 object as an .rds files
+saveRDS(dds, "./results/deseq2_dds.rds")
 ```
 

@@ -114,6 +114,8 @@ all_degs[c("lS_hS","lC_hC")] %>%
 
 ## Regulated genes for different populations belonging to the same region
 
+When looking at these diagrams, we expect to obtain the genes that are overlapping or not in the different populations belonging to the same region.
+
 ### Central Region
 
 ```{r}

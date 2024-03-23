@@ -139,6 +139,7 @@ res_waterLevel <- results(dds, contrast=c("waterLevel", "low", "high"))
 summary(res_waterLevel, alpha=0.05)
 
 ```
+
 According to the results, there would be 52 genes which are up-regulated in low water level versus high water level, and 7 which are down-regulated.
 
 
@@ -164,7 +165,7 @@ Although some there are many 0 values, the sum of the counts per row/gene across
 The numbers vary a lot even between replicates. Is this normal? or this is why we cannot take this genes into account, because it's not reliable.
 
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 genes_waterLevel <- rownames(res_waterLevel)
 
 log_fold_change <- res_waterLevel$log2FoldChange
@@ -241,8 +242,8 @@ Are the corrections for the p-value very restrictive? BH is not very restrictive
 
 In order to visualize the all the comparisons between the conditions (waterLevel and regions) without acquiring information about the interaction between the factors, we will make comparisons between factors: 
 
-* combine the factors of interest into a single factor with all combinations of the original factors
-* change the design to include just this factor
+* Combine the factors of interest into a single factor with all combinations of the original factors
+* Change the design to include just this factor
 
 
 ```{r}
@@ -281,7 +282,6 @@ summary(res_hS_hC, alpha=0.5)
 ```
 
 ## Low water in Southern Spain region vs Central Spain
-
 
 ```{r}
 res_lS_lC<-results(dds_group, contrast=c("group", "lowSouthern_Spain", "lowCentral_Spain"))
