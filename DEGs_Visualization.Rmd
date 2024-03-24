@@ -23,10 +23,13 @@ pacman::p_load(tidyverse, DESeq2, ggVennDiagram, UpSetR, plotly, ggrepel, scico)
 ```{r}
 # DEG object
 dds<-readRDS("./results/deseq2_dds.rds")
+dds_test<-readRDS("./results/deseq2_dds_test.rds")
 
 # The list of DEG results
 res<-readRDS("./results/deseq2_results_populations.rds")
+test<-readRDS("./results/deseq2_results_test.rds")
 summary(res)
+summary(test)
 
 ```
 
@@ -108,7 +111,8 @@ This Venn Diagram would bring light over genes that are regulated in the Souther
 ```{r}
 all_degs[c("lS_hS","lC_hC")] %>%
   ggVennDiagram(edge_size = 0) +
-  scale_fill_scico(palette = "batlow")
+  scale_fill_scico(palette = "batlow") + 
+  ggtitle("DEGs in Southern Spain vs. DEGs in Central Spain")
 ```
 
 
@@ -121,7 +125,8 @@ When looking at these diagrams, we expect to obtain the genes that are overlappi
 ```{r}
 all_degs[c("hBui_lBui","hCan_lCan", "hTur_lTur")] %>%
   ggVennDiagram(edge_size = 0) +
-  scale_fill_scico(palette = "batlow")
+  scale_fill_scico(palette = "batlow") + 
+  ggtitle("DEGs in the populations from Central Spain")
 ```
 
 
@@ -130,7 +135,8 @@ all_degs[c("hBui_lBui","hCan_lCan", "hTur_lTur")] %>%
 ```{r}
 all_degs[c("hEsp_lEsp","hLla_lLla", "hJab_lJab")] %>%
   ggVennDiagram(edge_size = 0) +
-  scale_fill_scico(palette = "batlow")
+  scale_fill_scico(palette = "batlow") + 
+  ggtitle("DEGs in the populations from Southern Spain")
 ```
 
 
@@ -150,6 +156,76 @@ down_degs[c("lS_hS","lC_hC")] %>%
   scale_fill_scico(palette = "batlow") +
   ggtitle("Down-regulated genes South and Central")
 ```
+
+
+
+# Test for all populations except Llano
+
+## Regulated genes in High and Low water in both Regions
+
+It is interesting to check both up and down-regulated genes in each region in the different treatment conditions (high and low water).
+This Venn Diagram would bring light over genes that are regulated in the Southern region which are not in the Central region and viceversa.
+
+
+```{r}
+all_degs_test<-lapply(test, FUN=extract_degs)
+str(all_degs_test)
+
+up_degs_test<-lapply(test, FUN=extract_up)
+down_degs_test<-lapply(test, FUN=extract_down)
+```
+
+
+```{r}
+all_degs_test[c("test_lS_hS","test_lC_hC")] %>%
+  ggVennDiagram(edge_size = 0) +
+  scale_fill_scico(palette = "batlow") + 
+  ggtitle("DEGs in Southern Spain vs. DEGs in Central Spain")
+```
+
+## Regulated genes for different populations belonging to the same region
+
+When looking at these diagrams, we expect to obtain the genes that are overlapping or not in the different populations belonging to the same region.
+
+### Central Region
+
+```{r}
+all_degs[c("hBui_lBui","hCan_lCan", "hTur_lTur")] %>%
+  ggVennDiagram(edge_size = 0) +
+  scale_fill_scico(palette = "batlow") + 
+  ggtitle("DEGs in the populations from Central Spain")
+```
+
+
+### Southern Region
+
+```{r}
+all_degs[c("hEsp_lEsp","hLla_lLla", "hJab_lJab")] %>%
+  ggVennDiagram(edge_size = 0) +
+  scale_fill_scico(palette = "batlow") + 
+  ggtitle("DEGs in the populations from Southern Spain")
+```
+
+
+## Up and Down-regulated genes
+
+
+```{r}
+up_degs_test[c("test_lS_hS","test_lC_hC")] %>%
+  ggVennDiagram(edge_size = 0) +
+  scale_fill_scico(palette = "batlow") +
+  ggtitle("Up-regulated genes South and Central")
+```
+
+```{r}
+down_degs_test[c("test_lS_hS","test_lC_hC")] %>%
+  ggVennDiagram(edge_size = 0) +
+  scale_fill_scico(palette = "batlow") +
+  ggtitle("Down-regulated genes South and Central")
+```
+
+
+
 
 
 # Annotation file

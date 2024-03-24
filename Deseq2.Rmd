@@ -318,6 +318,22 @@ res_lS_hS<-results(dds_group, contrast=c("group", "lowSouthern_Spain", "highSout
 summary(res_lS_hS, alpha=0.5)
 ```
 
+#DOUBT
+I thought the summary function was already taking out the NAs, but it appears not.
+Two ways of getting the actual number of DEGs, excluding 
+
+However, we will extract the DEGs afterwards and we will already exclude the NAs, it's just that I can't trust these numbers that I get from the summary.
+
+```{r}
+
+res_filtered_south <- res_lS_hS[!is.na(res_lS_hS$padj), ]
+summary(res_filtered_south, alpha=0.05)
+
+sum(res_lS_hS$padj < 0.05, na.rm=TRUE)
+```
+
+
+
 ## Central Spain region high and low water
 
 
