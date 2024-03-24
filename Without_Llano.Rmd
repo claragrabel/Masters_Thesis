@@ -209,9 +209,9 @@ resultsNames(dds_test)
 # Water Level: low vs high, independent of region
 
 ```{r}
-res_test_waterLevel <- results(dds_test, contrast=c("waterLevel", "low", "high"))
+test_waterLevel <- results(dds_test, contrast=c("waterLevel", "low", "high"))
 
-summary(res_test_waterLevel, alpha=0.05)
+summary(test_waterLevel, alpha=0.05)
 
 ```
 
@@ -221,9 +221,9 @@ According to the results, there would be 48 genes which are up-regulated in low 
 # Region: Southern Spain vs Central Spain, independent of water level
 
 ```{r}
-res_test_region<-results(dds_test, contrast=c("region", "Southern_Spain", "Central_Spain"))
+test_region<-results(dds_test, contrast=c("region", "Southern_Spain", "Central_Spain"))
 
-summary(res_test_region, alpha=0.05)
+summary(test_region, alpha=0.05)
 ```
 
 There appear to be 1440 genes up-regulated, 1825 genes down-regulated.
@@ -231,9 +231,9 @@ There appear to be 1440 genes up-regulated, 1825 genes down-regulated.
 # Interaction term: interaction between water level and region
 
 ```{r}
-res_test_interaction <- results(dds_test, name="waterLevellow.regionSouthern_Spain", alpha = 0.05)
+test_interaction <- results(dds_test, name="waterLevellow.regionSouthern_Spain", alpha = 0.05)
 
-summary(res_test_interaction)
+summary(test_interaction)
 ```
 1 gene up-regulated, 5 genes down-regulated.
 
@@ -292,6 +292,27 @@ test_lS_lC<-results(dds_test_group, contrast=c("group", "lowSouthern_Spain", "lo
 summary(test_lS_lC, alpha=0.5)
 ```
 
+
+```{r eval=FALSE, include=FALSE}
+genes_lS_lC <- rownames(test_lS_lC)
+head(genes_lS_lC)
+log_fold_change <- test_lS_lC$log2FoldChange
+q_value <- test_lS_lC$padj
+names(log_fold_change) <- genes_lS_lC
+names(q_value) <- genes_lS_lC
+
+activated_genes_lS_lC <- genes_lS_lC[log_fold_change > 1.5 & q_value < 0.05]
+length(activated_genes_lS_lC)
+length(activated_genes_lS_lC[!is.na(activated_genes_lS_lC)])
+activated_genes_lS_lC <- activated_genes_lS_lC[!is.na(activated_genes_lS_lC)]
+
+repressed_genes_lS_lC <- genes_lS_lC[log_fold_change < - 1.5 & q_value < 0.05]
+length(repressed_genes_lS_lC)
+length(repressed_genes_lS_lC[!is.na(repressed_genes_lS_lC)])
+repressed_genes_lS_lC <- repressed_genes_lS_lC[!is.na(repressed_genes_lS_lC)]
+```
+
+
 ## Southern Spain region high and low water
 
 ```{r}
@@ -299,6 +320,34 @@ test_lS_hS<-results(dds_test_group, contrast=c("group", "lowSouthern_Spain", "hi
 
 summary(test_lS_hS, alpha=0.5)
 ```
+
+
+```{r eval=FALSE, include=FALSE}
+#Checking the amount of DEGs that surpass a certain threshold for the log2 foldchange.
+
+genes_lS_hS <- rownames(test_lS_hS)
+head(genes_lS_hS)
+log_fold_change <- test_lS_hS$log2FoldChange
+q_value <- test_lS_hS$padj
+names(log_fold_change) <- genes_lS_hS
+names(q_value) <- genes_lS_hS
+length(!is.na(genes_lS_hS[q_value < 0.05]))
+activated_genes_lS_hS <- genes_lS_hS[log_fold_change > 1.5 & q_value < 0.05]
+length(activated_genes_lS_hS)
+length(activated_genes_lS_hS[!is.na(activated_genes_lS_hS)])
+activated_genes_lS_hS <- activated_genes_lS_hS[!is.na(activated_genes_lS_hS)]
+
+repressed_genes_lS_hS <- genes_lS_hS[log_fold_change < - 1.5 & q_value < 0.05]
+length(repressed_genes_lS_hS)
+length(repressed_genes_lS_hS[!is.na(repressed_genes_lS_hS)])
+repressed_genes_lS_hS <- repressed_genes_lS_hS[!is.na(repressed_genes_lS_hS)]
+
+# 5 genes are significantly differentially up-regulated and their change in expression is 2^(1.5) times higher in one condition compared to the other. According to this same parameters, 12 genes are down-regulated.
+
+```
+
+
+
 
 ## Central Spain region high and low water
 
@@ -310,6 +359,30 @@ summary(test_lC_hC, alpha=0.5)
 ```
 
 
+```{r eval=FALSE, include=FALSE}
+# Checking the amount of DEGs that surpass a certain threshold for the log2 foldchange.
+
+genes_lC_hC <- rownames(test_lC_hC)
+head(genes_lC_hC)
+log_fold_change <- test_lC_hC$log2FoldChange
+q_value <- test_lC_hC$padj
+names(log_fold_change) <- genes_lC_hC
+names(q_value) <- genes_lC_hC
+
+activated_genes_lC_hC <- genes_lC_hC[log_fold_change > 1.5 & q_value < 0.05]
+length(activated_genes_lC_hC)
+length(activated_genes_lC_hC[!is.na(activated_genes_lC_hC)])
+activated_genes_lC_hC <- activated_genes_lC_hC[!is.na(activated_genes_lC_hC)]
+
+repressed_genes_lC_hC <- genes_lC_hC[log_fold_change < - 1.5 & q_value < 0.05]
+length(repressed_genes_lC_hC)
+length(repressed_genes_lC_hC[!is.na(repressed_genes_lC_hC)])
+repressed_genes_lC_hC <- repressed_genes_lC_hC[!is.na(repressed_genes_lC_hC)]
+
+# 20 genes are significantly differentially up-regulated and their change in expression is 2^(1.5) times higher in one condition compared to the other. According to this same parameters, 4 genes are down-regulated.
+
+```
+
 
 # Exporting the results
 
@@ -317,23 +390,18 @@ summary(test_lC_hC, alpha=0.5)
 
 # Exporting them all as a list object and save it as an .rds file
 saveRDS(list(
-          waterLevel = res_waterLevel,
-          region = res_region,
-          interaction = res_interaction,
-          lS_lC = res_lS_lC,
-          hS_hC = res_hS_hC,
-          lS_hS = res_lS_hS,
-          lC_hC = res_lC_hC,
-          hBui_lBui = res_hBui_lBui,
-          hCan_lCan = res_hCan_lCan,
-          hTur_lTur = res_hTur_lTur,
-          hEsp_lEsp = res_hEsp_lEsp,
-          hLla_lLla = res_hLla_lLla,
-          hJab_lJab = res_hJab_lJab),
+          test_waterLevel = test_waterLevel,
+          test_region = test_region,
+          test_interaction = test_interaction,
+          test_lS_lC = test_lS_lC,
+          test_hS_hC = test_hS_hC,
+          test_lS_hS = test_lS_hS,
+          test_lC_hC = test_lC_hC),
           file = "./results/deseq2_results_test.rds")
 
 
-# export the DESeq2 object as an .rds files
-saveRDS(dds, "./results/deseq2_dds.rds")
+# Export the DESeq2 object as an .rds files
+saveRDS(dds_test, "./results/deseq2_dds_test.rds")
+
 ```
 
