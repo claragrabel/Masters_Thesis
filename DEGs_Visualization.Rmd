@@ -312,4 +312,47 @@ str(xtr_deg)
 Very few genes were not found in the annotation.
 
 
+# Make background
+
+As the background, we will use the all the genes that could be annotated in the Pelobates genome. 
+This way, we ensure that the background includes the genes that are potentially relevant to our study system while capturing the variability in gene expression across different conditions.
+
+Since _X. tropicalis_ is a different species, using all genes annotated in the Xenopus proteome could introduce genes that are not present in Pelobates, or may not accurately represent the genes that are relevant to the specific conditions of this study (regions and water level).
+
+
+```{r}
+xtr_background<-lapply(all_degs_test, FUN=extract_xtr)
+
+str(all_degs_test)
+str(xtr_background)
+```
+
+## Gene Ontology Enrichment
+
+We will use g:profiler. 
+The associated R package gprofiler2 is an API, and the actual analysis will be performed on the g:Profiler server. This version is continuously updated, to match the updates Because of this, it is important to tell gprofiler which version of Ensembl you would like to use
+
+Ensembl 110, Ensembl Genomes 57 (database built on 2023-09-14)
+
+
+```{r}
+# Set base url:
+set_base_url("https://biit.cs.ut.ee/gprofiler")
+
+
+# run the analysis
+res_ora<-gost(multi_query = FALSE, # returns separate results tables for multiquery
+              custom_bg = xtr_bg, # our background
+              query=xtr_deg, # our list of gene sets
+              organism="xtropicalis", # the organism our annotations belong to
+              exclude_iea = FALSE, # include GO terms that were electronically assigned
+              correction_method = "gSCS", # the recommended multiple testing correction.
+              sources=c("GO:BP","GO:CC","GO:MF", "KEGG","REAC"), # the functional sets we are interested in 
+              evcodes=FALSE, ## evcodes TRUE needed for downstream analysis like enrichment maps in Cytoscape, but this takes longer.
+              significant= FALSE) # return all terms, not just the significant ones
+
+
+# the results are stored as a "results" dataframe 
+head(res_ora$result)
+```
 
