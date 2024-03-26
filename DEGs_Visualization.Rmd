@@ -304,8 +304,8 @@ extract_xtr<-function(x) {
 }
 
 # Applying this function to a list of Pelobates IDs
-xtr_deg<-lapply(list_test, FUN=extract_xtr)
-str(list_test)
+xtr_deg<-lapply(all_degs_test, FUN=extract_xtr)
+str(all_degs_test)
 str(xtr_deg)
 ```
 
@@ -320,39 +320,110 @@ This way, we ensure that the background includes the genes that are potentially 
 Since _X. tropicalis_ is a different species, using all genes annotated in the Xenopus proteome could introduce genes that are not present in Pelobates, or may not accurately represent the genes that are relevant to the specific conditions of this study (regions and water level).
 
 
-```{r}
-xtr_background<-lapply(all_degs_test, FUN=extract_xtr)
+```{r eval=FALSE, include=FALSE}
+
+rownames_bg<-unique(c(rownames(test_waterLevel), rownames(test_region), rownames(test_interaction), rownames(test_lS_hS), rownames(test_lC_hC), rownames(test_hS_hC), rownames(test_lS_lC)))
+
+head(rownames_xtr_bg)
+length(rownames_xtr_bg)
+class(rownames_xtr_bg)
+
+xtr_background<-lapply(rownames_bg, FUN=extract_xtr)
+
+head(xtr_background)
+class(xtr_background)
+
+all_degs_test$test_waterLevel
+rownames(all_degs_test)
+rownames(xtr_background)
 
 str(all_degs_test)
 str(xtr_background)
 ```
 
+```{r}
+all_xtr_bg<-unique(c(extract_xtr(rownames(test$test_lC_hC)), extract_xtr(rownames(test$test_lS_hS)), extract_xtr(rownames(test$test_lS_lC)), extract_xtr(rownames(test$test_hS_hC)), extract_xtr(rownames(test$test_waterLevel)), extract_xtr(rownames(test$test_region)), extract_xtr(rownames(test$test_interaction))))
+
+class(all_xtr_bg)
+```
+
+
+
 ## Gene Ontology Enrichment
 
-We will use g:profiler. 
-The associated R package gprofiler2 is an API, and the actual analysis will be performed on the g:Profiler server. This version is continuously updated, to match the updates Because of this, it is important to tell gprofiler which version of Ensembl you would like to use
+We will use g:profiler tool, which is a web-based tool for functional enrichment analysis of gene lists. 
 
-Ensembl 110, Ensembl Genomes 57 (database built on 2023-09-14)
+The associated R package for g:Profiler is gprofiler2, which is an API (Application Programming Interface). This API serves as a bridge that allows performing the actual analysis within the g:Profiler server, by using the R environment in RStudio.
+
+g:Profiler is continuously being updated to match the updates in the associated Ensembl and Ensembl Genomes Data Bases. Because of this, it is important to specify which version of g:Profiler, and therefore Ensembl version, we would like to use. 
+We will do this by looking at the archives on the g:Profiler homepage and setting the base url for the desired version.
+
+Our annotations resulted from BLASTing _P. cultripes_ transcriptome against the 109 Ensembl release of the _X. tropicalis_ proteome, therefore we will use Ensembl 109, Ensembl Genomes 56 (database built on 2023-03-29).
 
 
 ```{r}
-# Set base url:
-set_base_url("https://biit.cs.ut.ee/gprofiler")
+# Install and load the gprofiler2 package. This package provides functions to access the gprofiler API directly from R. 
 
+# install.packages("gprofiler2")
+library(gprofiler2)
 
-# run the analysis
-res_ora<-gost(multi_query = FALSE, # returns separate results tables for multiquery
-              custom_bg = xtr_bg, # our background
+# Setting the base url
+
+set_base_url("https://biit.cs.ut.ee/gprofiler_archive3/e109_eg56_p17")
+# xtr_background
+# xtr_bg_vector<-unlist(xtr_background)
+# xtr_bg_vector
+# class(as.vector(xtr_background))
+
+# Run the analysis
+test_ora<-gost(multi_query = FALSE, # returns separate results tables for multiquery
+              custom_bg = all_xtr_bg, # our background
               query=xtr_deg, # our list of gene sets
               organism="xtropicalis", # the organism our annotations belong to
               exclude_iea = FALSE, # include GO terms that were electronically assigned
               correction_method = "gSCS", # the recommended multiple testing correction.
               sources=c("GO:BP","GO:CC","GO:MF", "KEGG","REAC"), # the functional sets we are interested in 
-              evcodes=FALSE, ## evcodes TRUE needed for downstream analysis like enrichment maps in Cytoscape, but this takes longer.
+              evcodes=FALSE, # evcodes TRUE needed for downstream analysis like enrichment maps in Cytoscape, but it takes longer.
               significant= FALSE) # return all terms, not just the significant ones
 
 
-# the results are stored as a "results" dataframe 
-head(res_ora$result)
+# The results are stored as a "results" dataframe 
+head(test_ora$result)
+dim(test_ora$result)
 ```
+
+
+Let's look at the enrichment results in detail
+
+```{r}
+colnames(test_ora$result)
+```
+
+* **query**: This column represents the gene set or query submitted to g:Profiler for enrichment analysis. Each row corresponds to a different gene set or query.
+
+* **significant**: This column indicates whether the enrichment analysis identified the term (functional category) as statistically significant. It contains a boolean value (TRUE or FALSE).
+
+* **p_value**: This column contains the adjusted p-values. Each p-value indicates the statistical significance of enrichment of a given term in the gene set.
+
+* **term_size**: This column represents the total number of genes in a specific term (functional category).
+
+* **query_size**: This column represents the total number of genes in the submitted query or gene set.
+
+* **intersection_size**: This column represents the number of genes that are shared between the submitted query and the term being analyzed. That is, how many genes from both term size and query size are overlapping. 
+
+* **term_id**: This column contains the unique identifier (ID) associated with the term (functional category) being analyzed.
+
+* **term_name: This column contains the name or description of the term (functional category) being analyzed.**
+
+* source: This column indicates the data source or database from which the term originates and that we requested (Gene Ontology, KEGG, Reactome).
+
+* precision: This column represents the proportion of the genes shared between the submitted query and the term being analyzed, relative to the total number of genes in the query. It measures the accuracy of the enrichment analysis. A higher precision value indicates that a larger proportion of the genes in the intersection are relevant to the term being analyzed, relative to the total number of genes in the query. In other words, it reflects how well the term represents the genes in the query.
+
+* recall: This column represents the proportion of the genes in the intersection, the same as the precision column, but relative to the total number of genes in the term. It reflects how well the term represents the genes in the dataset or background.
+
+* effective_domain_size: This column represents the effective domain size used in the enrichment analysis. It is a statistical parameter used to calculate the p-value.
+
+* source_order: This column represents the order or rank of the source (data database) based on its importance or relevance in the enrichment analysis.
+
+* parents: This column contains information about the parent terms or higher-level categories to which the analyzed term belongs. It may provide additional hierarchical context for the analyzed terms.
 
