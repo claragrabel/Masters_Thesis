@@ -287,10 +287,14 @@ Is it broader from the nucleotide blast? therefore I can get more annotated gene
 
 diamondblast109.csv
 
+Is gprofiler already taking into account the multiple annotations separated by ;??
+
 Possible ways of using this annotation file?
 * Consider each annotation separately (what I thought, selecting only 1 annotation resulting from a blast).
-* Combine annotations somehow?
+* Combine annotations somehow, aggregation? 
   + for many genes there is only the xenx_pep_id and xenp_pep_id, for some there is the description too
+
+
 
 
 ```{r}
