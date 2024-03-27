@@ -35,18 +35,12 @@ This annotation file contains all _P. cultripes_ transcripts by rows. As columns
 
 # The annotation file
 xtrop<-read_csv("diamondblast109.csv")
-xtrop
 
 ```
 
-```{r eval=FALSE, include=FALSE}
-old_xtrop<-read_csv("PCU23_annotations_xtr105_genes.csv")
-```
 
+-----------------------
 
-Since we will be repeateadly extracting the IDs from this annotation file for the multiple comparisons, we will make a function that extracts matching _X. tropicalis_ IDs.
-
-We will first focus on the IDs resulting from BLASTP.
 
 # DOUBT
 
@@ -71,18 +65,45 @@ $failed
  [10] "ENSXETP00000110359;ENSXETP00000064219;ENSXETP00000055424" 
 
 Possible ways of using this annotation file?
-* Consider each annotation separately (what I thought, selecting only 1 annotation resulting from a blast).
-* Combine annotations somehow, aggregation? 
-  + for many genes there is only the xenx_pep_id and xenp_pep_id, for some there is the description too
+(for many genes there is only the xenx_pep_id and xenp_pep_id, for some there is the description too)
+* Consider each annotation separately (selecting only 1 annotation resulting from a blast, what I am doing here).
+* Combine annotations somehow, aggregation? using some criteria
+  + choosing the annotation with the higher score
+
+
+-----------------
+
+
+However, this annotation file contains multiple annotations per gene. This means, in the columns corresponding to the results of BLASTing the genes, the fields (ID field or description field), we can find more than one element that is associated to one only gene.
+
+g:Profiler is unable to process this entries, therefore we have to choose only one annotation for each gene.
+I will only choose the first element of each field.
+This code splits each field by ;, selects the first element ([,1]), and replaces the original field value with this element.
+
+```{r}
+xtrop_processed<- xtrop %>%
+  mutate(across(everything(), ~str_split(.x, ";", simplify = TRUE)[, 1]))
+
+```
 
 
 
+```{r eval=FALSE, include=FALSE}
+# The annotation file used in the workshop had the same issue.
+
+old_xtrop<-read_csv("PCU23_annotations_xtr105_genes.csv")
+```
+
+
+Since we will be repeateadly extracting the IDs from this annotation file for the multiple comparisons, we will make a function that extracts matching _X. tropicalis_ IDs.
+
+We will first focus on the protein IDs resulting from BLASTP.
 
 ```{r}
 extract_xtr<-function(x) {
   return(
       xtrop %>%
-        filter(transcript_id %in% x) %>% #Filtering data frame (xtrop) to select rows where the gene_id column matches any of the IDs provided in the input list (x).
+        filter(gene_id %in% x) %>% #Filtering data frame (xtrop) to select rows where the gene_id column matches any of the IDs provided in the input list (x).
         pull(xenp_pep_id) %>% #Extracts the values from the xenp_pep_id column of the filtered data frame.
         unique()
   )
@@ -94,7 +115,24 @@ str(all_degs_test)
 str(xtr_deg)
 ```
 
-Very few genes were not found in the annotation.
+Very few genes were not found in the annotation. 
+
+
+```{r}
+extract_xtr_proc<-function(x) {
+  return(
+      xtrop_processed %>%
+        filter(gene_id %in% x) %>% #Filtering data frame (xtrop) to select rows where the gene_id column matches any of the IDs provided in the input list (x).
+        pull(xenp_pep_id) %>% #Extracts the values from the xenp_pep_id column of the filtered data frame.
+        unique()
+  )
+}
+
+# Applying this function to a list of Pelobates IDs
+xtr_deg_proc<-lapply(all_degs_test, FUN=extract_xtr_proc)
+str(all_degs_test)
+str(xtr_deg_proc)
+```
 
 
 # Make background
@@ -135,6 +173,15 @@ str(xtr_background)
 all_xtr_bg<-unique(c(extract_xtr(rownames(test$test_lC_hC)), extract_xtr(rownames(test$test_lS_hS)), extract_xtr(rownames(test$test_lS_lC)), extract_xtr(rownames(test$test_hS_hC)), extract_xtr(rownames(test$test_waterLevel)), extract_xtr(rownames(test$test_region)), extract_xtr(rownames(test$test_interaction))))
 
 str(all_xtr_bg)
+all_xtr_bg[1:20]
+```
+
+
+```{r}
+all_xtr_bg_proc<-unique(c(extract_xtr_proc(rownames(test$test_lC_hC)), extract_xtr_proc(rownames(test$test_lS_hS)), extract_xtr_proc(rownames(test$test_lS_lC)), extract_xtr_proc(rownames(test$test_hS_hC)), extract_xtr_proc(rownames(test$test_waterLevel)), extract_xtr_proc(rownames(test$test_region)), extract_xtr_proc(rownames(test$test_interaction))))
+
+str(all_xtr_bg_proc)
+all_xtr_bg_proc[1:20]
 ```
 
 
@@ -182,6 +229,42 @@ dim(test_ora$result)
 ```
 
 
+```{r}
+
+# Install and load the gprofiler2 package. This package provides functions to access the gprofiler API directly from R. 
+
+# install.packages("gprofiler2")
+library(gprofiler2)
+
+# Setting the base url
+
+set_base_url("https://biit.cs.ut.ee/gprofiler_archive3/e109_eg56_p17")
+
+
+# Run the analysis
+test_ora_proc<-gost(multi_query = FALSE, # returns separate results tables for multiquery
+              custom_bg = all_xtr_bg_proc, # our background
+              query=xtr_deg_proc, # our list of gene sets
+              organism="xtropicalis", # the organism our annotations belong to
+              exclude_iea = FALSE, # include GO terms that were electronically assigned
+              correction_method = "gSCS", # the recommended multiple testing correction.
+              sources=c("GO:BP","GO:CC","GO:MF", "KEGG","REAC"), # the functional sets we are interested in 
+              evcodes=FALSE, # evcodes TRUE needed for downstream analysis like enrichment maps in Cytoscape, but it takes longer.
+              significant= FALSE) # return all terms, not just the significant ones
+
+
+# The results are stored as a "results" dataframe 
+head(test_ora$result)
+dim(test_ora$result)
+#str(test_ora_proc$meta)
+length(test_ora_proc$meta$genes_metadata$failed)
+```
+
+# DOUBT
+
+I got the same result, 329 supposedly from the metadata failed.
+
+
 Let's look at the enrichment results in detail
 
 ```{r}
@@ -227,6 +310,14 @@ test_ora$result %>%
   group_by(query) %>%
   dplyr::count(query, sort=TRUE)
 ```
+
+```{r}
+test_ora_proc$result %>%
+  filter(p_value<0.05) %>%
+  group_by(query) %>%
+  dplyr::count(query, sort=TRUE)
+```
+The difference in the number of DEGs is only 6 more or less, except for the lS_lC that is reduced by 14.
 
 
 ## visualization
