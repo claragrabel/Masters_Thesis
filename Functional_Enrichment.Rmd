@@ -260,9 +260,7 @@ dim(test_ora$result)
 length(test_ora_proc$meta$genes_metadata$failed)
 ```
 
-# DOUBT
-
-I got the same result, 329 supposedly from the metadata failed.
+0 supposedly from the metadata failed, compared to 329 before.
 
 
 Let's look at the enrichment results in detail
@@ -327,11 +325,11 @@ gostplot(test_ora)
 ```
 
 
-```{r}
+```{r fig.height=17, fig.width=12}
 test_ora$result %>%
   select(query,term_name, p_value, intersection_size, query_size,source) %>%
   filter(p_value<0.05) %>%
-  mutate(GeneRatio=intersection_size/query_size) %>%
+  mutate(GeneRatio=intersection_size/query_size) %>% # this is actually the precision column
   arrange(GeneRatio) %>%
   mutate(term_name = factor(term_name, levels=unique(term_name))) %>%
   ggplot(aes(x=GeneRatio, y=term_name)) +
@@ -342,3 +340,43 @@ test_ora$result %>%
   theme_bw()
 ```
 
+```{r fig.height=20, fig.width=12}
+test_ora_proc$result %>%
+  select(query,term_name, p_value, intersection_size, query_size,source) %>%
+  filter(p_value<0.05) %>%
+  mutate(GeneRatio=intersection_size/query_size) %>%
+  # filter(GeneRatio>0.10) %>% I could do this to reduce the number of enriched terms somehow
+  arrange(GeneRatio) %>%
+  mutate(term_name = factor(term_name, levels=unique(term_name))) %>%
+  ggplot(aes(x=GeneRatio, y=term_name)) +
+  geom_point(aes(color=p_value, size=intersection_size)) +
+  ylab("") +
+  scale_color_scico(palette = "batlow", direction = -1) +
+  facet_grid(source~query,scales = "free_y",space = "free") +
+  theme_bw()
+```
+
+```{r fig.height=20, fig.width=12}
+test_ora_proc$result %>%
+  select(query,term_name, p_value, intersection_size, query_size,source) %>%
+  filter(p_value<0.05) %>%
+  mutate(GeneRatio=intersection_size/query_size) %>%
+  filter(GeneRatio>0.10) %>% 
+  arrange(GeneRatio) %>%
+  mutate(term_name = factor(term_name, levels=unique(term_name))) %>%
+  ggplot(aes(x=GeneRatio, y=term_name)) +
+  geom_point(aes(color=p_value, size=intersection_size)) +
+  ylab("") +
+  scale_color_scico(palette = "batlow", direction = -1) +
+  facet_grid(source~query,scales = "free_y",space = "free") +
+  theme_bw()
+```
+
+
+
+# DOUBT
+
+Why are there some terms that are not shared between water level and the two regions comparisons if they're all about metabolism?
+
+
+# Volcano 

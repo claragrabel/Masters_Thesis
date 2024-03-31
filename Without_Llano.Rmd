@@ -348,7 +348,6 @@ repressed_genes_lS_hS <- repressed_genes_lS_hS[!is.na(repressed_genes_lS_hS)]
 
 
 
-
 ## Central Spain region high and low water
 
 
@@ -382,6 +381,124 @@ repressed_genes_lC_hC <- repressed_genes_lC_hC[!is.na(repressed_genes_lC_hC)]
 # 20 genes are significantly differentially up-regulated and their change in expression is 2^(1.5) times higher in one condition compared to the other. According to this same parameters, 4 genes are down-regulated.
 
 ```
+
+# Specific comparisons for population and water level
+
+We will also visualize the all the comparisons between the waterLevel and populations factors, combining the factors of interest into a single factor with all combinations of the original factors and changing the design to include just this factor.
+
+
+```{r}
+
+group_test_pop<-factor(paste0(dds_test$waterLevel, dds_test$populations))
+group_test_design_pop <- cbind(exp_test, group = group_test_pop)
+group_test_design_pop
+
+colnames(group_test_design_pop) <- c("sample_id","waterLevel", "region", "population", "group")
+
+#write.table(group_design, file="group_design.csv", sep=",", row.names = F)
+
+dds_test_group_pop <- DESeqDataSetFromTximport(
+  txi = txi_test, 
+  colData = group_test_design_pop,
+  design = ~ group
+)
+
+dds_test_group_pop
+
+dds_test_group_pop <- dds_test_group_pop[rowSums(counts(dds_test_group_pop)) >= 10,]
+dds_test_group_pop <- DESeq(dds_test_group_pop)
+
+resultsNames(dds_test_group_pop)
+
+```
+
+### Buitrago Population: High vs Low Water Level
+
+```{r}
+test_hBui_lBui<-results(dds_test_group_pop, contrast=c("group", "highBuitrago", "lowBuitrago"))
+
+summary(test_hBui_lBui, alpha=0.5)
+```
+
+36 genes up-regulated, 63 down-regulated.
+
+
+### Canencia Population: High vs Low Water Level
+
+```{r}
+test_hCan_lCan<-results(dds_test_group_pop, contrast=c("group", "highCanencia", "lowCanencia"))
+
+summary(res_hCan_lCan, alpha=0.5)
+```
+
+14 genes up-regulated, 38 down-regulated.
+
+
+### Turrubuelo Population: High vs Low Water Level
+
+```{r}
+test_hTur_lTur<-results(dds_test_group_pop, contrast=c("group", "highTurrubuelo", "lowTurrubuelo"))
+
+summary(test_hTur_lTur, alpha=0.5)
+```
+
+11 genes up-regulated, 37 down-regulated.
+
+
+### Espajosas Population: High vs Low Water Level
+
+```{r}
+test_hEsp_lEsp<-results(dds_test_group_pop, contrast=c("group", "highEspajosas", "lowEspajosas"))
+
+summary(test_hEsp_lEsp, alpha=0.5)
+```
+
+287 genes up-regulated, 298 down-regulated.
+
+
+```{r eval=FALSE, include=FALSE}
+
+# I only ran this chunk to double check that Llano population was not included in the design.
+
+test_hLla_lLla<-results(dds_test_group_pop, contrast=c("group", "highLlano", "lowLlano"))
+
+summary(test_hLla_lLla, alpha=0.5)
+```
+
+
+### Jabata Population: High vs Low Water Level
+
+```{r}
+test_hJab_lJab<-results(dds_test_group_pop, contrast=c("group", "highJabata", "lowJabata"))
+
+summary(test_hJab_lJab, alpha=0.5)
+```
+
+20 genes up-regulated, 16 genes down-regulated.
+
+
+## Diagnostics
+
+### P-value distribution 
+
+
+```{r}
+# For specific comparisons:
+par(mfrow=c(2,2))
+par(mar=c(4,4,4,4))
+hist(test_hS_hC$pvalue, breaks=50, col="grey", main="hS_hC", xlab = "p-value")
+hist(test_lS_lC$pvalue, breaks=50, col="grey", main="lS_lC", xlab = "p-value")
+hist(test_lS_hS$pvalue, breaks=50, col="grey", main="lS_hS", xlab = "p-value")
+hist(test_lC_hC$pvalue, breaks=50, col="grey", main="lC_hC", xlab = "p-value")
+```
+
+
+### Dispersion plot
+
+```{r}
+plotDispEsts(dds_test)
+```
+
 
 
 # Exporting the results

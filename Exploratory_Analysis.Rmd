@@ -355,7 +355,7 @@ Heatmaps can also help visualize the clustering of the samples, but they can add
 
 ## Heatmap by samples
 
-We have to manually calculate this distances first, and then use those distances to inform the heatmap.
+We have to manually calculate these heat map first, and then use those distances to inform the heatmap.
 
 
 ```{r}
@@ -382,7 +382,9 @@ pheatmap(sample_dist_matrix,
          annotation_row = annotation_df, cluster_rows = FALSE, cluster_cols = FALSE)
 ```
 
-With this heatmap, we would conclude something analogous to the PCA: there is greater dissimilarity between regions than between water level. 
+The color gradient from blue to red represents the range of the distances between samples (that can be interpreted as similarity or dissimilarity), with blue indicating smaller distances (samples are more similar) and red indicating larger distances (samples are less similar). 
+
+With this heat map, we would conclude something analogous to the PCA: there is greater dissimilarity between regions than between water level. 
 
 
 ## Heatmap by genes
