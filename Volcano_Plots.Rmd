@@ -12,8 +12,8 @@ gg_res <- res %>%
   left_join(xtrop_processed, by=c("gene_id")) %>% # add annotations
   ggplot(aes(x=log2FoldChange, y=-log10(padj), color=sig,
             text=paste0("</br>Pcu23 gene: ", gene_id,
-                        "</br>Pcu23 peptide: ", xenp_description,
-                       "</br>X.tr peptide: ", xenp_gene_symbol
+                        "</br>X.tr peptide: ", xenp_gene_symbol,
+                       "</br>X.tr description: ", xenp_description
                        )
          )) +
   geom_point(alpha=0.75, shape=16) +
@@ -24,9 +24,3 @@ gg_res <- res %>%
 
 gg_res
 ```
-
-
-```{r fig.height=25, fig.width=12}
-ggplotly(gg_res, tooltip="text")
-```
-

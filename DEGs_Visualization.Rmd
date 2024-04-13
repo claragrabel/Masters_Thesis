@@ -105,11 +105,20 @@ ggvenn(venn_data, columns = c("nombre1","nombre2","nombre3"),stroke_size = 0.3,
 ## Regulated genes in High and Low water in both Regions
 
 It is interesting to check both up and down-regulated genes in each region in the different treatment conditions (high and low water).
-This Venn Diagram would bring light over genes that are regulated in the Southern region which are not in the Central region and viceversa.
+This Venn Diagram would bring light over genes that are regulated in the Southern region which are not in the Central region and viceversa towards the response to water level.
 
 
 ```{r}
 all_degs[c("lS_hS","lC_hC")] %>%
+  ggVennDiagram(edge_size = 0) +
+  scale_fill_scico(palette = "batlow") + 
+  ggtitle("Water Level in Southern Spain vs. in Central Spain")
+```
+
+### Regulated genes between regions for the same water level
+
+```{r}
+all_degs[c("lS_lC","hS_hC")] %>%
   ggVennDiagram(edge_size = 0) +
   scale_fill_scico(palette = "batlow") + 
   ggtitle("DEGs in Southern Spain vs. DEGs in Central Spain")
@@ -157,6 +166,20 @@ down_degs[c("lS_hS","lC_hC")] %>%
   ggtitle("Down-regulated genes South and Central")
 ```
 
+```{r}
+down_degs[c("lS_lC","hS_hC")] %>%
+  ggVennDiagram(edge_size = 0) +
+  scale_fill_scico(palette = "batlow") +
+  ggtitle("Down-regulated genes same water level")
+```
+
+```{r}
+up_degs[c("lS_lC","hS_hC")] %>%
+  ggVennDiagram(edge_size = 0) +
+  scale_fill_scico(palette = "batlow") +
+  ggtitle("Up-regulated genes same water level")
+```
+
 
 
 # Test for all populations except Llano
@@ -180,7 +203,7 @@ down_degs_test<-lapply(test, FUN=extract_down)
 all_degs_test[c("test_lS_hS","test_lC_hC")] %>%
   ggVennDiagram(edge_size = 0) +
   scale_fill_scico(palette = "batlow") + 
-  ggtitle("DEGs regarding water level in Southern Spain vs. DEGs in Central Spain")
+  ggtitle("Water level in Southern Spain vs. Central Spain")
 ```
 
 Regarding water level response, there are 53 DEGs in Central Spain and 27 in Southern Spain. There are no common differentially expressed genes between Southern and Central regions.
@@ -220,6 +243,16 @@ all_degs_test[c("test_lS_lC","test_hS_hC")] %>%
 Still, the larger effect is due to the region and not the water level. There is a higher amount of DEGs in the South compared to the Center, and there is a large number of common shared DEGs between regions.
 
 
+```{r}
+up_degs_test[c("test_lS_lC","test_hS_hC")] %>%
+  ggVennDiagram(edge_size = 0) +
+  scale_fill_scico(palette = "batlow") +
+  ggtitle("Up-regulated genes regarding Region")
+```
+
+
+
+
 ## Venn Diagram all comparisons
 
 From this diagram we can extract information about common DEGs for different comparisons.
@@ -234,16 +267,30 @@ all_degs_test[c("test_lS_hS","test_lC_hC", "test_lS_lC", "test_hS_hC")] %>%
 
 
 ```{r}
-list_test<-all_degs_test[c("test_lS_hS","test_lC_hC", "test_lS_lC", "test_hS_hC")]
+list_test<-all_degs_test[c("test_lS_hS","test_lC_hC", "test_lS_lC", "test_hS_hC", "test_interaction", "test_region", "test_waterLevel")]
 
 upset(fromList(list_test),
       number.angles = 0, point.size = 3, line.size = 1,
       sets.x.label = "Number of DEGs",
       set_size.show = TRUE,
-      set_size.scale_max = max(sapply(list_test, length)), 
+      sets=c("test_lS_hS","test_lC_hC", "test_lS_lC", "test_hS_hC", "test_interaction", "test_region", "test_waterLevel"),
+      set_size.scale_max = max(sapply(list_test, length))+1000, 
       text.scale = c(1.2, 1.2, 1.2, 1.2, 1.5, 1.5),
       order.by=c("degree","freq"))
+
+max(sapply(list_test, length))
 ```
 
 
+```{r}
+list_res_pop<-all_degs[c("hBui_lBui","hCan_lCan", "hTur_lTur", "hEsp_lEsp", "hLla_lLla", "hJab_lJab")]
+
+upset(fromList(list_res_pop),
+      number.angles = 0, point.size = 3, line.size = 1,
+      sets.x.label = "Number of DEGs",
+      set_size.show = TRUE,
+      set_size.scale_max = max(sapply(list_res_pop, length))+40, 
+      text.scale = c(1.2, 1.2, 1.2, 1.2, 1.5, 1.5),
+      order.by=c("degree","freq"))
+```
 

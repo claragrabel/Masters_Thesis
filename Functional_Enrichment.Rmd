@@ -315,7 +315,7 @@ test_ora_proc$result %>%
   group_by(query) %>%
   dplyr::count(query, sort=TRUE)
 ```
-The difference in the number of DEGs is only 6 more or less, except for the lS_lC that is reduced by 14.
+The difference in the number of enriched terms is only 6 more or less, except for the lS_lC that is reduced by 14.
 
 
 ## visualization
@@ -380,3 +380,15 @@ Why are there some terms that are not shared between water level and the two reg
 
 
 # Volcano 
+
+
+# Functional enrichment with Llano Population
+
+```{r}
+res_xtr_bg_proc<-unique(c(extract_xtr_proc(rownames(res$lC_hC)), extract_xtr_proc(rownames(res$lS_hS)), extract_xtr_proc(rownames(res$lS_lC)), extract_xtr_proc(rownames(res$hS_hC)), extract_xtr_proc(rownames(res$waterLevel)), extract_xtr_proc(rownames(res$region)), extract_xtr_proc(rownames(res$interaction))))
+
+str(all_xtr_bg_proc)
+all_xtr_bg_proc[1:20]
+```
+```
+

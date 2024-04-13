@@ -72,20 +72,47 @@ txi_south <- lapply(txi_filtered, function(x) {
   }
 })
 
+
 dim(txi_south$counts)
+
+# If we visualize the new txi object, the desired samples have been removed correctly.
+
+```
+
+Creating the experimental design and the DESeq object.
+
+```{r}
 
 exp_south <- exp_design[region=="Southern_Spain", ]
 
 dds_south_pop <- DESeqDataSetFromTximport(
   txi = txi_south, 
   colData = exp_south,
-  design = ~ populations * region)
+  design = ~ populations * waterLevel)
 
 dds_south_pop <- dds_south_pop[rowSums(counts(dds_south_pop)) >= 10,]
 dds_south_pop <- DESeq(dds_south_pop)
 
 resultsNames(dds_south_pop)
+
 ```
+
+
+```{r}
+poc_Jab_Esp <- results(dds_south_pop, contrast=c("waterLevel", "Jabata", "Espajosas"))
+
+summary(poc_Jab_Esp, alpha=0.05)
+```
+Grouping water level and populations.
+
+```{r}
+
+exp_south$group <- paste(exp_south$populations, exp_south$waterLevel, sep="_")
+
+exp_south
+
+```
+
 
 
 

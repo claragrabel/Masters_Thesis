@@ -269,7 +269,7 @@ resultsNames(dds_group)
 ```{r}
 res_hS_hC<-results(dds_group, contrast=c("group", "highSouthern_Spain", "highCentral_Spain"))
 
-summary(res_hS_hC, alpha=0.5)
+summary(res_hS_hC, alpha=0.05)
 ```
 
 ## Low water in Southern Spain region vs Central Spain
@@ -277,7 +277,7 @@ summary(res_hS_hC, alpha=0.5)
 ```{r}
 res_lS_lC<-results(dds_group, contrast=c("group", "lowSouthern_Spain", "lowCentral_Spain"))
 
-summary(res_lS_lC, alpha=0.5)
+summary(res_lS_lC, alpha=0.05)
 ```
 
 
@@ -306,7 +306,7 @@ repressed_genes_lS_lC <- repressed_genes_lS_lC[!is.na(repressed_genes_lS_lC)]
 ```{r}
 res_lS_hS<-results(dds_group, contrast=c("group", "lowSouthern_Spain", "highSouthern_Spain"))
 
-summary(res_lS_hS, alpha=0.5)
+summary(res_lS_hS, alpha=0.05)
 ```
 
 #DOUBT
@@ -331,7 +331,7 @@ sum(res_lS_hS$padj < 0.05, na.rm=TRUE)
 ```{r}
 res_lC_hC<-results(dds_group, contrast=c("group", "lowCentral_Spain", "highCentral_Spain"))
 
-summary(res_lC_hC, alpha=0.5)
+summary(res_lC_hC, alpha=0.05)
 ```
 
 
@@ -377,10 +377,10 @@ resultsNames(dds_populations)
 ```{r}
 res_hBui_lBui<-results(dds_populations, contrast=c("group", "highBuitrago", "lowBuitrago"))
 
-summary(res_hBui_lBui, alpha=0.5)
+summary(res_hBui_lBui, alpha=0.05)
 ```
 
-31 genes up-regulated, 51 genes down-regulated.
+10 genes up-regulated, 14 genes down-regulated.
 
 
 ### Canencia Population: High vs Low Water Level
@@ -388,7 +388,7 @@ summary(res_hBui_lBui, alpha=0.5)
 ```{r}
 res_hCan_lCan<-results(dds_populations, contrast=c("group", "highCanencia", "lowCanencia"))
 
-summary(res_hCan_lCan, alpha=0.5)
+summary(res_hCan_lCan, alpha=0.05)
 ```
 
 14 genes up-regulated, 38 genes down-regulated.
@@ -399,10 +399,10 @@ summary(res_hCan_lCan, alpha=0.5)
 ```{r}
 res_hTur_lTur<-results(dds_populations, contrast=c("group", "highTurrubuelo", "lowTurrubuelo"))
 
-summary(res_hTur_lTur, alpha=0.5)
+summary(res_hTur_lTur, alpha=0.05)
 ```
 
-12 genes up-regulated, 50 genes down-regulated.
+4 genes up-regulated, 6 genes down-regulated.
 
 
 ### Espajosas Population: High vs Low Water Level
@@ -410,10 +410,10 @@ summary(res_hTur_lTur, alpha=0.5)
 ```{r}
 res_hEsp_lEsp<-results(dds_populations, contrast=c("group", "highEspajosas", "lowEspajosas"))
 
-summary(res_hEsp_lEsp, alpha=0.5)
+summary(res_hEsp_lEsp, alpha=0.05)
 ```
 
-368 genes up-regulated, 366 genes down-regulated.
+14 genes up-regulated, 15 genes down-regulated.
 
 
 ### Llano Population: High vs Low Water Level
@@ -421,10 +421,10 @@ summary(res_hEsp_lEsp, alpha=0.5)
 ```{r}
 res_hLla_lLla<-results(dds_populations, contrast=c("group", "highLlano", "lowLlano"))
 
-summary(res_hLla_lLla, alpha=0.5)
+summary(res_hLla_lLla, alpha=0.05)
 ```
 
-1001 genes up-regulated, 1005 genes down-regulated.
+75 genes up-regulated, 86 genes down-regulated.
 
 
 ### Jabata Population: High vs Low Water Level
@@ -432,10 +432,10 @@ summary(res_hLla_lLla, alpha=0.5)
 ```{r}
 res_hJab_lJab<-results(dds_populations, contrast=c("group", "highJabata", "lowJabata"))
 
-summary(res_hJab_lJab, alpha=0.5)
+summary(res_hJab_lJab, alpha=0.05)
 ```
 
-18 genes up-regulated, 11 genes down-regulated.
+10 genes up-regulated, 7 genes down-regulated.
 
 
 ## MA Plots
@@ -443,7 +443,7 @@ summary(res_hJab_lJab, alpha=0.5)
 Plotting the mean of normalized counts against the log fold change.
 
 ```{r}
-par(mfrow=c(3,1))
+par(mfrow=c(1,2))
 # single plot
 DESeq2::plotMA(res_hBui_lBui, main="Buitrago Population High vs. Low")
 DESeq2::plotMA(res_hCan_lCan, main="Canencia Population High vs. Low")
