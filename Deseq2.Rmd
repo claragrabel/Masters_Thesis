@@ -32,7 +32,7 @@ assayNames(dds)
 
 ```
 
-dds is a  S4 object system, with slots that can be accessed through @ instead of $ (for S3 objects).
+dds is a  S4 object system, with slots that can be accessed through @ instead of $ ($ being used for S3 objects).
 The core of the object are assays (a single or multiple matrices) with samples as columns and features (genes in our case) as rows. 
 
 Let's check the different assays stored in the dds object.

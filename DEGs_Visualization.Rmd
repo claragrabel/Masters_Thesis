@@ -80,6 +80,9 @@ str(all_degs)
 up_degs<-lapply(res, FUN=extract_up)
 down_degs<-lapply(res, FUN=extract_down)
 
+up_degs_test<-lapply(test, FUN=extract_up)
+down_degs_test<-lapply(test, FUN=extract_down)
+
 ```
 
 
@@ -174,11 +177,20 @@ down_degs[c("lS_lC","hS_hC")] %>%
 ```
 
 ```{r}
-up_degs[c("lS_lC","hS_hC")] %>%
+up_degs_[c("lS_lC","hS_hC")] %>%
   ggVennDiagram(edge_size = 0) +
   scale_fill_scico(palette = "batlow") +
   ggtitle("Up-regulated genes same water level")
 ```
+
+```{r}
+up_degs_test[c("test_lS_lC","hS_hC")] %>%
+  ggVennDiagram(edge_size = 0) +
+  scale_fill_scico(palette = "batlow") +
+  ggtitle("Up-regulated genes same water level")
+```
+
+
 
 
 
@@ -250,7 +262,12 @@ up_degs_test[c("test_lS_lC","test_hS_hC")] %>%
   ggtitle("Up-regulated genes regarding Region")
 ```
 
-
+```{r}
+down_degs_test[c("test_lS_lC","test_hS_hC")] %>%
+  ggVennDiagram(edge_size = 0) +
+  scale_fill_scico(palette = "batlow") +
+  ggtitle("Down-regulated genes regarding Region")
+```
 
 
 ## Venn Diagram all comparisons

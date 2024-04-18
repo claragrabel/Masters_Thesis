@@ -15,10 +15,9 @@ Loading the necessary libraries.
 pacman::p_load(tidyverse, DESeq2)
 ```
 
-
 # DOUBT
 
-I could not get the interaction terms for all populations because it takes one of the  populations as the baseline.
+I could not get the interaction terms for all populations because it takes one of the populations as the baseline.
 
 Also, I was unable to get the interaction term between population and region. I thought this would provide me with information about the uniformity between populations in the same region.
 
@@ -51,11 +50,7 @@ resultsNames(dds_water_pop)
 # res_water_Bui<-results(dds_water_pop, contrast=list(c("waterLevellow.populationsBuitrago")))
 ```
 
-
-
-```{r eval=FALSE, include=FALSE}
-
-# Trying to get the interaction between region and population. 
+```{r}
 
 txi_south <- lapply(txi_filtered, function(x) {
   # Check if x is a matrix or a data frame
@@ -79,7 +74,74 @@ dim(txi_south$counts)
 
 ```
 
-Creating the experimental design and the DESeq object.
+# Proof of Concept
+
+### Only Southern Region
+
+Only using the populations belonging only to the the southern region and performing DESeq2 on this data.
+
+We will follow 3 approaches, using different designs for performing DESeq2.
+
+  * ~ populations * waterlevel
+  
+In order to see the difference with the previous tests that had both regions.
+
+This design would provide the independent main effect of waterlevel and population on gene expression, where each  factor's influence on gene expression is evaluated separately. The design also provides the interaction between them. 
+
+The water level effect would be the effect of changing water levels while holding the population constant. 
+Similarly, the coefficients for population show the effect of different populations at a fixed water level.
+As for the interaction term, it would inform about whether the impact of changing water levels on gene expression differs across different populations.
+
+
+The results will show genes that are differentially expressed due to:
+
+Each population compared to a reference population (assuming other conditions like water level are held constant).
+Each water level compared to a reference water level (assuming populations are held constant).
+Specific combinations of population and water level, indicating interaction effects—where the expression change due to water level differs significantly among populations.
+
+
+_Regarding the Statistics behind DESeq2_
+
+DESeq2 treats both waterlevel and population as independent factors affecting gene expression. It will estimate separate effects (log2 fold changes) for each level of waterlevel and population, compared to their respective reference levels. *This is done while controlling for the other variable, meaning it assesses the impact of one factor while holding the other constant.*
+
+Suppose waterlevel has levels Low and High, and population has levels A and B. If Low and A are reference levels, the model estimates effects of High versus Low (holding population constant) and B versus A (holding water level constant).
+
+
+  + ~ populations
+  
+Since we already filtered by the populations belonging to the southern region, checking only for the populations effect.
+
+DESeq2 models gene expression differences based solely on population differences. It estimates the effects of each population level compared to a reference population, without considering any other factors like water level.
+
+If populations are A and B, with A as the reference, the model estimates the effect of B versus A. The model does not merge the water levels or select any single level as a baseline; it simply excludes water level from the model altogether.
+
+All variation in gene expression is analyzed as if it stems only from differences among populations. The analysis proceeds with the assumption that either water level does not impact gene expression, or that its impact is uniformly distributed across all populations.
+
+If water level actually affects gene expression and this effect varies between populations, excluding water level from the model could lead to confounded results. 
+
+_Confounding in statistics refers to a situation where the effect of a primary independent variable (the factor of interest) on an outcome is mixed up with the effect of a third variable, known as the confounder. The confounder is a variable that influences both the independent variable and the dependent variable, leading to a potential distortion in the estimated relationship between the independent variable and the dependent variable._
+
+
+
+  + ~ waterLevel
+
+Since we already filtered by the populations belonging to the southern region, checking only for the waterLevel effect.
+
+This design assesses the direct impact of water level changes on gene expression across the southern populations. This can be  useful for understanding environmental stress responses or adaptations.
+
+  + ~ group
+  
+Being the group factor a combination of the water level and populations factors in a new column in the experimental design matrix.
+
+In this design, group is a fusion of populations and waterlevel, with each unique combination treated as a distinct group. This approach is best suited for identifying differential expression patterns that are specific to unique combinations of population and water level.
+
+The model inherently captures interactions between populations and water levels because it is directly modeling each unique combination as a distinct group. If it is suspected that the effect of water level might depend on the population (or vice versa), this is a suitable approach.
+
+In our case, it is of interest the see the interaction between the population effect and the water effect.
+
+
+
+Creating the experimental design matrix and the DESeq2 object.
 
 ```{r}
 
@@ -97,24 +159,39 @@ resultsNames(dds_south_pop)
 
 ```
 
-
 ```{r}
 poc_Jab_Esp <- results(dds_south_pop, contrast=c("waterLevel", "Jabata", "Espajosas"))
 
 summary(poc_Jab_Esp, alpha=0.05)
 ```
+
 Grouping water level and populations.
 
 ```{r}
 
-exp_south$group <- paste(exp_south$populations, exp_south$waterLevel, sep="_")
+group_populations<-factor(paste0(exp_south$waterLevel, exp_south$populations))
+exp_south <- exp_design[region=="Southern_Spain", ]
+exp_south <- cbind(exp_south, group = group_populations)
 
-exp_south
+dds_south_group <- DESeqDataSetFromTximport(
+  txi = txi_south, 
+  colData = exp_south,
+  design = ~ group)
+
+dds_south_group <- dds_south_group[rowSums(counts(dds_south_group)) >= 10,]
+
+dds_south_group <- DESeq(dds_south_group)
+
+resultsNames(dds_south_group)
 
 ```
 
+```{r}
+colData(dds_south_group)
 
-
+poc_JabH_JabL <- results(dds_south_pop, contrast=c("group", "lowEspajosas", "highEspajosas"))
+summary(poc_JabH_JabL, alpha=0.05)
+```
 
 ```{r eval=FALSE, include=FALSE}
 
