@@ -37,18 +37,62 @@ resultsNames(dds_water_pop)
 
 ```
 
+This DESeq analysis is taking high water level and Buitrago as its references for each factor.
+
+With the following results, we are specifically examining the effect on gene expression when the water level is "low" (compared to the reference level "high"), and the population is whichever specified in the name of the contrast (compared to the reference population).
+
+This means, that the DEGs obtained or the change in gene expression are due to the combination of being in "low" water level conditions when in the specified population; and his change is specifically measured relative to the baseline scenario where the water level is "high" and the population is Buitrago.
+
 ```{r eval=FALSE, include=FALSE}
 
 # Storing the interaction terms between each population and the water level
 
-# res_water_Can<-results(dds_water_pop, name ="waterLevellow.populationsCanencia")
-# summary(res_water_Can)
-# 
-# res_water_Lla<-results(dds_water_pop, name ="waterLevellow.populationsLlano")
-# summary(res_water_Lla)
-# 
-# res_water_Bui<-results(dds_water_pop, contrast=list(c("waterLevellow.populationsBuitrago")))
+int_water_Can<-results(dds_water_pop, name ="waterLevellow.populationsCanencia")
+summary(int_water_Can, alpha=0.05)
+
+# LFC > 0 (up)       : 17, 0.088%
+# LFC < 0 (down)     : 3, 0.016%
+
+int_water_Tur<-results(dds_water_pop, name ="waterLevellow.populationsTurrubuelo")
+summary(int_water_Tur, alpha=0.05)
+
+# LFC > 0 (up)       : 8, 0.041%
+# LFC < 0 (down)     : 0, 0%
+
+# I cannot get Bui because it took it as the reference, I would have to change the reference population
+#int_water_Bui<-results(dds_water_pop, name="waterLevellow.populationsBuitrago")
+
+int_water_Esp<-results(dds_water_pop, name ="waterLevellow.populationsEspajosas")
+summary(int_water_Esp, alpha=0.05)
+
+# LFC > 0 (up)       : 3, 0.016%
+# LFC < 0 (down)     : 2, 0.01%
+
+int_water_Lla<-results(dds_water_pop, name ="waterLevellow.populationsLlano")
+summary(res_water_Lla, alpha=0.05)
+
+# LFC > 0 (up)       : 9, 0.047%
+# LFC < 0 (down)     : 8, 0.041%
+
+int_water_Jab<-results(dds_water_pop, name ="waterLevellow.populationsJabata")
+summary(int_water_Jab, alpha=0.05)
+
+# LFC > 0 (up)       : 6, 0.031%
+# LFC < 0 (down)     : 5, 0.026%
+
 ```
+
+```{r}
+res_water_design_both<-results(dds_water_pop, name ="waterLevel_low_vs_high")
+summary(res_water_design_both, alpha=0.05)
+```
+
+# Proof of Concept
+
+### Only Southern Region
+
+Only using the populations belonging only to the the southern region and performing DESeq2 on this data.
+
 
 ```{r}
 
@@ -74,12 +118,6 @@ dim(txi_south$counts)
 
 ```
 
-# Proof of Concept
-
-### Only Southern Region
-
-Only using the populations belonging only to the the southern region and performing DESeq2 on this data.
-
 We will follow 3 approaches, using different designs for performing DESeq2.
 
   * ~ populations * waterlevel
@@ -104,10 +142,51 @@ _Regarding the Statistics behind DESeq2_
 
 DESeq2 treats both waterlevel and population as independent factors affecting gene expression. It will estimate separate effects (log2 fold changes) for each level of waterlevel and population, compared to their respective reference levels. *This is done while controlling for the other variable, meaning it assesses the impact of one factor while holding the other constant.*
 
-Suppose waterlevel has levels Low and High, and population has levels A and B. If Low and A are reference levels, the model estimates effects of High versus Low (holding population constant) and B versus A (holding water level constant).
+Our water level treatment has levels Low and High, and let's say population has levels A and B. If Low and A are reference levels, the model estimates effects of High versus Low (holding population constant) and B versus A (holding water level constant).
 
 
-  + ~ populations
+```{r}
+
+group_populations<-factor(paste0(exp_design$waterLevel, exp_design$populations))
+exp_south <- cbind(exp_design, group = group_populations)
+exp_south <- exp_south[region=="Southern_Spain", ]
+
+dds_water_pop_south <- DESeqDataSetFromTximport(
+  txi = txi_south, 
+  colData = exp_south,
+  design = ~ waterLevel * populations)
+
+dds_water_pop_south <- dds_water_pop_south[rowSums(counts(dds_water_pop_south)) >= 10,]
+dds_water_pop_south <- DESeq(dds_water_pop_south)
+resultsNames(dds_water_pop_south)
+
+```
+
+Storing the results.
+
+```{r eval=FALSE, include=FALSE}
+
+# Storing the interaction terms between each population and the water level
+
+int_south_water_Jab<-results(dds_water_pop_south, name ="waterLevellow.populationsJabata")
+summary(int_south_water_Jab, alpha=0.05)
+
+# LFC > 0 (up)       : 1
+# LFC < 0 (down)     : 2
+
+int_south_water_Llano<-results(dds_water_pop_south, name ="waterLevellow.populationsLlano")
+summary(int_water_Tur, alpha=0.05)
+
+# LFC > 0 (up)       : 8, 0.041%
+# LFC < 0 (down)     : 0, 0%
+
+# I cannot get Bui because it took it as the reference, I would have to change the reference population
+#int_south_water_Bui<-results(dds_water_pop_south, name="waterLevellow.populationsBuitrago")
+
+```
+
+
+ + ~ populations
   
 Since we already filtered by the populations belonging to the southern region, checking only for the populations effect.
 
@@ -123,11 +202,32 @@ _Confounding in statistics refers to a situation where the effect of a primary i
 
 
 
+```{r}
+
+dds_pop_south <- DESeqDataSetFromTximport(
+  txi = txi_south, 
+  colData = exp_south,
+  design = ~ populations)
+
+dds_pop_south <- dds_pop_south[rowSums(counts(dds_pop_south)) >= 10,]
+dds_pop_south <- DESeq(dds_pop_south)
+resultsNames(dds_pop_south)
+
+```
+
+Storing the results in variables
+
+```{r}
+
+```
+
+
   + ~ waterLevel
 
 Since we already filtered by the populations belonging to the southern region, checking only for the waterLevel effect.
 
 This design assesses the direct impact of water level changes on gene expression across the southern populations. This can be  useful for understanding environmental stress responses or adaptations.
+
 
   + ~ group
   
@@ -140,38 +240,13 @@ The model inherently captures interactions between populations and water levels 
 In our case, it is of interest the see the interaction between the population effect and the water effect.
 
 
+Since the levels are "highEspajosas" "highJabata" "highLlano" "lowEspajosas"  "lowJabata" "lowLlano", the reference that DESeq2 takes is the first alphabetically so in this case it's high Espajosas.
 
-Creating the experimental design matrix and the DESeq2 object.
-
-```{r}
-
-exp_south <- exp_design[region=="Southern_Spain", ]
-
-dds_south_pop <- DESeqDataSetFromTximport(
-  txi = txi_south, 
-  colData = exp_south,
-  design = ~ populations * waterLevel)
-
-dds_south_pop <- dds_south_pop[rowSums(counts(dds_south_pop)) >= 10,]
-dds_south_pop <- DESeq(dds_south_pop)
-
-resultsNames(dds_south_pop)
-
-```
-
-```{r}
-poc_Jab_Esp <- results(dds_south_pop, contrast=c("waterLevel", "Jabata", "Espajosas"))
-
-summary(poc_Jab_Esp, alpha=0.05)
-```
-
-Grouping water level and populations.
+This means that what DESeq does it taking each group and comparing it/making it relative to the reference, and then those groups who have been compared to the reference are compared between themselves.
 
 ```{r}
 
-group_populations<-factor(paste0(exp_south$waterLevel, exp_south$populations))
-exp_south <- exp_design[region=="Southern_Spain", ]
-exp_south <- cbind(exp_south, group = group_populations)
+# Grouping water level and populations.
 
 dds_south_group <- DESeqDataSetFromTximport(
   txi = txi_south, 
@@ -179,7 +254,6 @@ dds_south_group <- DESeqDataSetFromTximport(
   design = ~ group)
 
 dds_south_group <- dds_south_group[rowSums(counts(dds_south_group)) >= 10,]
-
 dds_south_group <- DESeq(dds_south_group)
 
 resultsNames(dds_south_group)
@@ -187,11 +261,40 @@ resultsNames(dds_south_group)
 ```
 
 ```{r}
-colData(dds_south_group)
 
-poc_JabH_JabL <- results(dds_south_pop, contrast=c("group", "lowEspajosas", "highEspajosas"))
+poc_EspH_EspL <- results(dds_south_group, contrast=c("group", "lowEspajosas", "highEspajosas"))
+summary(poc_EspH_EspL, alpha=0.05)
+
+# LFC > 0 (up)       : 6, 0.033%
+# LFC < 0 (down)     : 8, 0.044%
+# outliers [1]       : 394, 2.2%
+# low counts [2]     : 2445, 13%
+
+poc_JabH_JabL <- results(dds_south_group, contrast=c("group", "lowJabata", "highJabata"))
 summary(poc_JabH_JabL, alpha=0.05)
+
+# LFC > 0 (up)       : 82, 0.45%
+# LFC < 0 (down)     : 62, 0.34%
+# outliers [1]       : 394, 2.2%
+# low counts [2]     : 4395, 24%
+
+poc_LlaH_LlaL <- results(dds_south_group, contrast=c("group", "lowLlano", "highLlano"))
+summary(poc_LlaH_LlaL, alpha=0.05)
+
+# LFC > 0 (up)       : 82, 0.45%
+# LFC < 0 (down)     : 62, 0.34%
+# outliers [1]       : 394, 2.2%
+# low counts [2]     : 4395, 24%
+
 ```
+
+
+### Each population separately
+
+
+
+
+
 
 ```{r eval=FALSE, include=FALSE}
 
