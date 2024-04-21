@@ -95,11 +95,11 @@ DESeq2 does the following:
 
 * Estimation of Dispersion:
 
-  + After normalization, DESeq2 estimates dispersion for each gene, which measures the variability of counts beyond what would be expected from a Poisson distribution (the simplest model for count data, assuming the mean equals the variance). RNA-seq data often exhibit over-dispersion, where the variance exceeds the mean, partly due to biological variability among replicates. DESeq2 uses a model that assumes counts are over-dispersed and estimates dispersion parameters for each gene, allowing for the modeling of both within-group variability and low sample sizes. This is crucial for accurate differential expression analysis, as it ensures that the statistical tests account for the inherent variability in the data.
+  + After normalization, DESeq2 estimates dispersion for each gene, which measures the variability of counts beyond what would be expected from a Poisson distribution (the simplest model for count data, assuming the mean equals the variance). RNA-seq data often exhibit over-dispersion, where the variance exceeds the mean, partly due to biological variability among replicates. DESeq2 uses a model that assumes counts are over-dispersed and estimates dispersion parameters for each gene. This is crucial for accurate differential expression analysis, as it ensures that the statistical tests account for the inherent variability in the data.
 
 * Negative Binomial GLM Fitting:
 
-  + With size factors and dispersion estimates in hand, DESeq2 fits a generalized linear model (GLM) using a negative binomial distribution for each gene. The negative binomial distribution is suitable for count data with over-dispersion because it introduces an additional parameter (over the Poisson distribution) to model the variance separately from the mean. This step involves modeling the counts as a function of experimental conditions (or other covariates of interest), allowing DESeq2 to estimate the effect size (i.e., the fold change in expression) and its significance for each gene across conditions.
+  + With size factors and dispersion estimates in hand, DESeq2 fits a generalized linear model (GLM) using a negative binomial distribution for each gene. The negative binomial distribution is suitable for count data with over-dispersion because it introduces an additional parameter (over the Poisson distribution) to model the variance separately from the mean. 
 
 
 * Wald Statistics Calculation and Multiple Testing Correction:
@@ -157,7 +157,7 @@ res_waterLevel <- results(dds, contrast=c("waterLevel", "low", "high"))
 summary(res_waterLevel, alpha=0.05)
 ```
 
-According to the results, there would be 52 genes which are up-regulated in low water level versus high water level, and 7 which are down-regulated. These would mean that these genes are differentially expressed in both regions only because of the treatment effect.
+According to the results, there would be 52 genes which are up-regulated in low water level versus high water level, and 7 which are down-regulated. These would be genes that are differentially expressed in both regions only because of the treatment effect.
 
 
 ```{r eval=FALSE, include=FALSE}
@@ -190,7 +190,7 @@ res_region<-results(dds, contrast=c("region", "Southern_Spain", "Central_Spain")
 summary(res_region, alpha=0.05)
 ```
 
-2154 genes are up-regulated, and 2420 genes  are down-regulated.
+2154 genes are up-regulated, and 2420 genes  are down-regulated. These would be genes that account for regional differences between populations from Southern Spain and from Central Spain.
 
 
 ```{r eval=FALSE, include=FALSE}
@@ -272,6 +272,9 @@ res_hS_hC<-results(dds_group, contrast=c("group", "highSouthern_Spain", "highCen
 summary(res_hS_hC, alpha=0.05)
 ```
 
+2154 up-regulated and 2420 genes down regulated. These would be DEGs accounting for the regional variation in the transcriptome in optimal water conditions, when there is no desiccation stress. 
+
+
 ## Low water in Southern Spain region vs Central Spain
 
 ```{r}
@@ -279,6 +282,8 @@ res_lS_lC<-results(dds_group, contrast=c("group", "lowSouthern_Spain", "lowCentr
 
 summary(res_lS_lC, alpha=0.05)
 ```
+
+2474 genes up-regulated and 2736 genes down-regulated. These genes are differentially expressed in the distinct regions in low water conditions (drought or dessication stress). 
 
 
 ```{r eval=FALSE, include=FALSE}
@@ -316,6 +321,15 @@ Two ways of getting the actual number of DEGs, excluding
 However, we will extract the DEGs afterwards and we will already exclude the NAs, it's just that I can't trust these numbers that I get from the summary.
 
 ```{r}
+
+head(res_lS_hS)
+
+res_lS_hS_filtered_NA<- res_lS_hS %>%
+as_tibble() %>%
+filter(!is.na(padj))
+
+
+length(res_lS_hS[is.na(res_lS_hS$padj), ])
 
 res_filtered_south <- res_lS_hS[!is.na(res_lS_hS$padj), ]
 summary(res_filtered_south, alpha=0.05)

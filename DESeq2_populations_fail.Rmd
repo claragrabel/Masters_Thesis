@@ -21,6 +21,7 @@ I could not get the interaction terms for all populations because it takes one o
 
 Also, I was unable to get the interaction term between population and region. I thought this would provide me with information about the uniformity between populations in the same region.
 
+
 ## Interaction term between Population and Water Level
 
 From here, we can also get the effect of Population independently.
@@ -85,6 +86,10 @@ summary(int_water_Jab, alpha=0.05)
 ```{r}
 res_water_design_both<-results(dds_water_pop, name ="waterLevel_low_vs_high")
 summary(res_water_design_both, alpha=0.05)
+
+# LFC > 0 (up)       : 14, 0.072%
+# LFC < 0 (down)     : 9, 0.047%
+
 ```
 
 # Proof of Concept
@@ -295,6 +300,8 @@ We will reduce the txi object to only one population in each case and see the re
 
 #### Buitrago
 
+First, we will filter only those columns belonging to the specific population out of the txi object.
+
 ```{r}
 txi_Bui <- lapply(txi_filtered, function(x) {
   # Check if x is a matrix or a data frame
@@ -314,23 +321,18 @@ txi_Bui <- lapply(txi_filtered, function(x) {
 dim(txi_Bui$counts)
 
 ```
-* Water and Population design
-
-* Water design
-
-* Population design
 
 * Group design
 
 ```{r}
 # Grouping water level and populations.
 
-exp_Bui<-group_design_pop[populations=="Buitrago",]
-exp_Bui
+exp_Bui_group<-group_design_pop[populations=="Buitrago",]
+exp_Bui_group
 
 dds_Bui_group <- DESeqDataSetFromTximport(
   txi = txi_Bui, 
-  colData = exp_Bui,
+  colData = exp_Bui_group,
   design = ~ group)
 
 dds_Bui_group <- dds_Bui_group[rowSums(counts(dds_Bui_group)) >= 10,]
@@ -348,6 +350,33 @@ summary(bui_group, alpha=0.05)
 # LFC > 0 (up)       : 12, 0.073%
 # LFC < 0 (down)     : 2, 0.012%
 ```
+
+* Water Level
+
+```{r}
+exp_Bui<-group_design_pop[populations=="Buitrago",]
+exp_Bui
+
+
+dds_Bui_water <- DESeqDataSetFromTximport(
+  txi = txi_Bui, 
+  colData = exp_Bui,
+  design = ~ waterLevel)
+
+dds_Bui_water <- dds_Bui_water[rowSums(counts(dds_Bui_water)) >= 10,]
+dds_Bui_water <- DESeq(dds_Bui_water)
+
+resultsNames(dds_Bui_water)
+
+bui_water <- results(dds_Bui_water, name="waterLevel_low_vs_high")
+summary(bui_water, alpha=0.05)
+
+# LFC > 0 (up)       : 12, 0.073%
+# LFC < 0 (down)     : 2, 0.012%
+
+```
+
+
 
 #### Canencia
 
@@ -559,7 +588,7 @@ summary(Lla_group, alpha=0.05)
 exp_Lla<-group_design_pop[populations=="Llano",]
 exp_Lla
 
-dds_Jab_group <- DESeqDataSetFromTximport(
+dds_Lla_group <- DESeqDataSetFromTximport(
   txi = txi_Lla, 
   colData = exp_Lla,
   design = ~ group)
@@ -572,8 +601,8 @@ Lla_group_all<-results(dds_Lla_group_all, name="group_lowLlano_vs_highLlano")
 
 summary(Lla_group_all, alpha=0.05)
 
-# LFC > 0 (up)       : 226, 1.4%
-# LFC < 0 (down)     : 269, 1.6%
+# LFC > 0 (up)       : 214, 1.1%
+# LFC < 0 (down)     : 257, 1.3%
 # outliers [1]       : 461, 2.8%
 # low counts [2]     : 3031, 18%
 
@@ -587,6 +616,31 @@ summary(Lla_group_all)
 
 ```
 
+
+* Water design
+
+```{r}
+exp_Lla<-group_design_pop[populations=="Llano",]
+exp_Lla
+
+
+dds_Lla_water <- DESeqDataSetFromTximport(
+  txi = txi_Lla, 
+  colData = exp_Lla,
+  design = ~ waterLevel)
+
+dds_Lla_water <- dds_Lla_water[rowSums(counts(dds_Lla_water)) >= 10,]
+dds_Lla_water <- DESeq(dds_Lla_water)
+
+resultsNames(dds_Lla_water)
+
+Lla_water <- results(dds_Lla_water, name="waterLevel_low_vs_high")
+summary(Lla_water, alpha=0.05)
+
+# LFC > 0 (up)       : 226, 1.4%
+# LFC < 0 (down)     : 269, 1.6%
+
+```
 
 
 
