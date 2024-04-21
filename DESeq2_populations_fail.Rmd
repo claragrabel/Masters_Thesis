@@ -291,7 +291,389 @@ summary(poc_LlaH_LlaL, alpha=0.05)
 
 ### Each population separately
 
+We will reduce the txi object to only one population in each case and see the results this way.
 
+#### Buitrago
+
+```{r}
+txi_Bui <- lapply(txi_filtered, function(x) {
+  # Check if x is a matrix or a data frame
+  if (is.matrix(x) || is.data.frame(x)) {
+    # We want to maintain columns that belong to the central region, so we will remove those from the southern region.
+    patterns <- c("Can", "Tur", "Lla", "Esp", "Jab")
+    pattern <- paste(patterns, collapse = "|")
+    cols_to_remove <- grep(pattern, colnames(x))
+    # Remove the specified rows
+    return(x[, -cols_to_remove])
+  } else {
+    # If not, return x unchanged
+    return(x)
+  }
+})
+
+dim(txi_Bui$counts)
+
+```
+* Water and Population design
+
+* Water design
+
+* Population design
+
+* Group design
+
+```{r}
+# Grouping water level and populations.
+
+exp_Bui<-group_design_pop[populations=="Buitrago",]
+exp_Bui
+
+dds_Bui_group <- DESeqDataSetFromTximport(
+  txi = txi_Bui, 
+  colData = exp_Bui,
+  design = ~ group)
+
+dds_Bui_group <- dds_Bui_group[rowSums(counts(dds_Bui_group)) >= 10,]
+dds_Bui_group <- DESeq(dds_Bui_group)
+
+resultsNames(dds_Bui_group)
+```
+
+
+```{r}
+bui_group<-results(dds_Bui_group, name="group_lowBuitrago_vs_highBuitrago")
+summary(bui_group, alpha=0.05)
+
+
+# LFC > 0 (up)       : 12, 0.073%
+# LFC < 0 (down)     : 2, 0.012%
+```
+
+#### Canencia
+
+```{r}
+# Selecting only Canencia data
+
+txi_Can <- lapply(txi_filtered, function(x) {
+  # Check if x is a matrix or a data frame
+  if (is.matrix(x) || is.data.frame(x)) {
+    # We want to maintain columns that belong to the central region, so we will remove those from the southern region.
+    patterns <- c("Bui", "Tur", "Lla", "Esp", "Jab")
+    pattern <- paste(patterns, collapse = "|")
+    cols_to_remove <- grep(pattern, colnames(x))
+    # Remove the specified rows
+    return(x[, -cols_to_remove])
+  } else {
+    # If not, return x unchanged
+    return(x)
+  }
+})
+
+dim(txi_Can$counts)
+
+```
+
+```{r}
+# Grouping water level and populations.
+
+exp_Can<-group_design_pop[populations=="Canencia",]
+exp_Can
+
+dds_Can_group <- DESeqDataSetFromTximport(
+  txi = txi_Can, 
+  colData = exp_Can,
+  design = ~ group)
+
+dds_Can_group <- dds_Can_group[rowSums(counts(dds_Can_group)) >= 10,]
+dds_Can_group <- DESeq(dds_Can_group)
+
+resultsNames(dds_Can_group)
+```
+
+
+```{r}
+can_group<-results(dds_Can_group, name="group_lowCanencia_vs_highCanencia")
+summary(can_group, alpha=0.05)
+
+# LFC > 0 (up)       : 7, 0.044%
+# LFC < 0 (down)     : 5, 0.031%
+```
+
+
+#### Turrubuelo
+
+```{r}
+# Selecting only Turrubuelo data
+
+txi_Tur <- lapply(txi_filtered, function(x) {
+  # Check if x is a matrix or a data frame
+  if (is.matrix(x) || is.data.frame(x)) {
+    # We want to maintain columns that belong to the central region, so we will remove those from the southern region.
+    patterns <- c("Bui", "Can", "Lla", "Esp", "Jab")
+    pattern <- paste(patterns, collapse = "|")
+    cols_to_remove <- grep(pattern, colnames(x))
+    # Remove the specified rows
+    return(x[, -cols_to_remove])
+  } else {
+    # If not, return x unchanged
+    return(x)
+  }
+})
+
+dim(txi_Tur$counts)
+
+```
+
+```{r}
+# Grouping water level and populations.
+
+exp_Tur<-group_design_pop[populations=="Turrubuelo",]
+exp_Tur
+
+dds_Tur_group <- DESeqDataSetFromTximport(
+  txi = txi_Tur, 
+  colData = exp_Tur,
+  design = ~ group)
+
+dds_Tur_group <- dds_Tur_group[rowSums(counts(dds_Tur_group)) >= 10,]
+dds_Tur_group <- DESeq(dds_Tur_group)
+
+resultsNames(dds_Tur_group)
+```
+
+
+```{r}
+tur_group<-results(dds_Tur_group, name="group_lowTurrubuelo_vs_highTurrubuelo")
+summary(tur_group, alpha=0.05)
+
+# LFC > 0 (up)       : 10, 0.06%
+# LFC < 0 (down)     : 1, 0.006%
+```
+
+#### Espajosas
+
+```{r}
+# Selecting only Espajosas data
+
+txi_Esp <- lapply(txi_filtered, function(x) {
+  # Check if x is a matrix or a data frame
+  if (is.matrix(x) || is.data.frame(x)) {
+    # We want to maintain columns that belong to the central region, so we will remove those from the southern region.
+    patterns <- c("Bui", "Tur", "Can", "Lla", "Jab")
+    pattern <- paste(patterns, collapse = "|")
+    cols_to_remove <- grep(pattern, colnames(x))
+    # Remove the specified rows
+    return(x[, -cols_to_remove])
+  } else {
+    # If not, return x unchanged
+    return(x)
+  }
+})
+
+dim(txi_Esp$counts)
+
+```
+
+```{r}
+# Grouping water level and populations.
+
+exp_Esp<-group_design_pop[populations=="Espajosas",]
+exp_Esp
+
+dds_Esp_group <- DESeqDataSetFromTximport(
+  txi = txi_Esp, 
+  colData = exp_Esp,
+  design = ~ group)
+
+dds_Esp_group <- dds_Esp_group[rowSums(counts(dds_Esp_group)) >= 10,]
+dds_Esp_group <- DESeq(dds_Esp_group)
+
+resultsNames(dds_Esp_group)
+```
+
+
+```{r}
+esp_group<-results(dds_Esp_group, name="group_lowEspajosas_vs_highEspajosas")
+summary(esp_group, alpha=0.05)
+
+# LFC > 0 (up)       : 41, 0.25%
+# LFC < 0 (down)     : 18, 0.11%
+
+```
+
+
+#### Llano
+
+```{r}
+# Selecting only Llano data
+
+txi_Lla <- lapply(txi_filtered, function(x) {
+  # Check if x is a matrix or a data frame
+  if (is.matrix(x) || is.data.frame(x)) {
+    # We want to maintain columns that belong to the central region, so we will remove those from the southern region.
+    patterns <- c("Bui", "Tur", "Can", "Esp", "Jab")
+    pattern <- paste(patterns, collapse = "|")
+    cols_to_remove <- grep(pattern, colnames(x))
+    # Remove the specified rows
+    return(x[, -cols_to_remove])
+  } else {
+    # If not, return x unchanged
+    return(x)
+  }
+})
+
+dim(txi_Lla$counts)
+
+```
+
+```{r}
+# Grouping water level and populations.
+
+exp_Lla<-group_design_pop[populations=="Llano",]
+exp_Lla
+
+dds_Lla_group <- DESeqDataSetFromTximport(
+  txi = txi_Lla, 
+  colData = exp_Lla,
+  design = ~ group)
+
+dds_Lla_group <- dds_Lla_group[rowSums(counts(dds_Lla_group)) >= 10,]
+dds_Lla_group <- DESeq(dds_Lla_group)
+
+resultsNames(dds_Lla_group)
+```
+
+
+```{r}
+Lla_group<-results(dds_Lla_group, name="group_lowLlano_vs_highLlano")
+summary(Lla_group, alpha=0.05)
+
+# LFC > 0 (up)       : 226, 1.4%
+# LFC < 0 (down)     : 269, 1.6%
+
+```
+
+```{r}
+# Without filtering out those genes with less than 10 counts across all samples.
+
+exp_Lla<-group_design_pop[populations=="Llano",]
+exp_Lla
+
+dds_Jab_group <- DESeqDataSetFromTximport(
+  txi = txi_Lla, 
+  colData = exp_Lla,
+  design = ~ group)
+
+dds_Lla_group_all <- DESeq(dds_Lla_group)
+
+resultsNames(dds_Lla_group_all)
+
+Lla_group_all<-results(dds_Lla_group_all, name="group_lowLlano_vs_highLlano")
+
+summary(Lla_group_all, alpha=0.05)
+
+# LFC > 0 (up)       : 226, 1.4%
+# LFC < 0 (down)     : 269, 1.6%
+# outliers [1]       : 461, 2.8%
+# low counts [2]     : 3031, 18%
+
+summary(Lla_group_all)
+
+# adjusted p-value < 0.1
+# LFC > 0 (up)       : 328, 2%
+# LFC < 0 (down)     : 379, 2.3%
+# outliers [1]       : 461, 2.8%
+# low counts [2]     : 3031, 18%
+
+```
+
+
+
+
+#### Jabata
+
+```{r}
+# Selecting only Jabata data
+
+txi_Jab <- lapply(txi_filtered, function(x) {
+  # Check if x is a matrix or a data frame
+  if (is.matrix(x) || is.data.frame(x)) {
+    # We want to maintain columns that belong to the central region, so we will remove those from the southern region.
+    patterns <- c("Bui", "Tur", "Can", "Esp", "Lla")
+    pattern <- paste(patterns, collapse = "|")
+    cols_to_remove <- grep(pattern, colnames(x))
+    # Remove the specified rows
+    return(x[, -cols_to_remove])
+  } else {
+    # If not, return x unchanged
+    return(x)
+  }
+})
+
+dim(txi_Jab$counts)
+
+```
+
+```{r}
+# Grouping water level and populations.
+
+exp_Jab<-group_design_pop[populations=="Jabata",]
+exp_Jab
+
+dds_Jab_group <- DESeqDataSetFromTximport(
+  txi = txi_Jab, 
+  colData = exp_Jab,
+  design = ~ group)
+
+dds_Jab_group <- dds_Jab_group[rowSums(counts(dds_Jab_group)) >= 10,]
+dds_Jab_group <- DESeq(dds_Jab_group)
+
+resultsNames(dds_Jab_group)
+```
+
+
+```{r}
+Jab_group<-results(dds_Jab_group, name="group_lowJabata_vs_highJabata")
+summary(Jab_group, alpha=0.05)
+
+# LFC > 0 (up)       : 2, 0.012%
+# LFC < 0 (down)     : 5, 0.03%
+# outliers [1]       : 576, 3.5%
+# low counts [2]     : 324, 1.9%
+```
+
+
+```{r}
+# Without filtering out those genes with less than 10 counts across all samples.
+
+exp_Jab<-group_design_pop[populations=="Jabata",]
+exp_Jab
+
+dds_Jab_group <- DESeqDataSetFromTximport(
+  txi = txi_Jab, 
+  colData = exp_Jab,
+  design = ~ group)
+
+dds_Jab_group_all <- DESeq(dds_Jab_group)
+
+resultsNames(dds_Jab_group_all)
+
+Jab_group_all<-results(dds_Jab_group_all, name="group_lowJabata_vs_highJabata")
+summary(Jab_group_all, alpha=0.05)
+
+# LFC > 0 (up)       : 1, 0.0049%
+# LFC < 0 (down)     : 5, 0.025%
+# outliers [1]       : 576, 2.8%
+# low counts [2]     : 3045, 15%
+
+summary(Jab_group_all)
+# adjusted p-value < 0.1
+# LFC > 0 (up)       : 2, 0.0099%
+# LFC < 0 (down)     : 9, 0.044%
+# outliers [1]       : 576, 2.8%
+# low counts [2]     : 3045, 15%
+
+```
 
 
 
