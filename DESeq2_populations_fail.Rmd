@@ -22,16 +22,16 @@ I could not get the interaction terms for all populations because it takes one o
 Also, I was unable to get the interaction term between population and region. I thought this would provide me with information about the uniformity between populations in the same region.
 
 
-## Interaction term between Population and Water Level
+## Complete counts matrix, Population and Water Level
 
 From here, we can also get the effect of Population independently.
 
 ```{r}
 dds_water_pop <- DESeqDataSetFromTximport(
   txi = txi_filtered, 
-  colData = exp_design,
+  colData = group_design_pop,
   design = ~ waterLevel * populations)
-
+group
 dds_water_pop <- dds_water_pop[rowSums(counts(dds_water_pop)) >= 10,]
 dds_water_pop <- DESeq(dds_water_pop)
 resultsNames(dds_water_pop)
@@ -42,9 +42,82 @@ This DESeq analysis is taking high water level and Buitrago as its references fo
 
 With the following results, we are specifically examining the effect on gene expression when the water level is "low" (compared to the reference level "high"), and the population is whichever specified in the name of the contrast (compared to the reference population).
 
-This means, that the DEGs obtained or the change in gene expression are due to the combination of being in "low" water level conditions when in the specified population; and his change is specifically measured relative to the baseline scenario where the water level is "high" and the population is Buitrago.
+This means, that the DEGs obtained or the change in gene expression are due to the combination of being in "low" water level conditions when in the specified population; and this change is specifically measured relative to the baseline scenario where the water level is "high" and the population is Buitrago.
 
-```{r eval=FALSE, include=FALSE}
+```{r}
+
+# res_waterLevel is the comparison obtained for waterLevel_low_vs_high when using the first ever design waterLevel * region
+
+summary(res_waterLevel, alpha=0.05)
+
+# LFC > 0 (up)       : 52, 0.27%
+# LFC < 0 (down)     : 7, 0.036%
+
+
+# res_water_pop is the comparison obtained for waterLevel_low_vs_high when using as design waterLevel * population
+
+res_water_pop<-results(dds_water_pop, name ="waterLevel_low_vs_high")
+summary(res_water_pop, alpha=0.05)
+
+# LFC > 0 (up)       : 14, 0.072%
+# LFC < 0 (down)     : 9, 0.047%
+
+```
+
+```{r}
+
+# These are DEGs from the southern populations being compared two by two 
+
+pop_Esp_Lla <- results(dds_water_pop, contrast= c("populations", "Espajosas", "Llano"))
+summary(pop_Esp_Lla, alpha=0.05)
+
+# LFC > 0 (up)       : 16, 0.083%
+# LFC < 0 (down)     : 6, 0.031%
+
+pop_Jab_Lla <- results(dds_water_pop, contrast= c("populations", "Jabata", "Llano"))
+summary(pop_Jab_Lla, alpha=0.05)
+
+# LFC > 0 (up)       : 9, 0.047%
+# LFC < 0 (down)     : 9, 0.047%
+
+pop_Jab_Esp <- results(dds_water_pop, contrast= c("populations", "Jabata", "Espajosas"))
+summary(pop_Jab_Esp, alpha=0.05)
+
+# LFC > 0 (up)       : 13, 0.067%
+# LFC < 0 (down)     : 18, 0.093%
+
+```
+
+Populations from the south seem to be closer/more similar between them than populations in the center? At least they have less DEGs between them.
+
+
+```{r}
+
+# These are DEGs from the central populations being compared two by two 
+
+pop_Bui_Can <- results(dds_water_pop, contrast= c("populations", "Canencia", "Buitrago"))
+summary(pop_Bui_Can, alpha=0.05)
+
+# LFC > 0 (up)       : 106, 0.55%
+# LFC < 0 (down)     : 214, 1.1%
+
+pop_Bui_Tur <- results(dds_water_pop, contrast= c("populations", "Buitrago", "Turrubuelo"))
+summary(pop_Bui_Tur, alpha=0.05)
+
+# LFC > 0 (up)       : 91, 0.47%
+# LFC < 0 (down)     : 78, 0.4%
+
+pop_Can_Tur <- results(dds_water_pop, contrast= c("populations", "Canencia", "Turrubuelo"))
+summary(pop_Can_Tur, alpha=0.05)
+
+# LFC > 0 (up)       : 124, 0.64%
+# LFC < 0 (down)     : 214, 1.1%
+
+```
+
+
+
+```{r}
 
 # Storing the interaction terms between each population and the water level
 
@@ -83,14 +156,6 @@ summary(int_water_Jab, alpha=0.05)
 
 ```
 
-```{r}
-res_water_design_both<-results(dds_water_pop, name ="waterLevel_low_vs_high")
-summary(res_water_design_both, alpha=0.05)
-
-# LFC > 0 (up)       : 14, 0.072%
-# LFC < 0 (down)     : 9, 0.047%
-
-```
 
 # Proof of Concept
 
@@ -122,6 +187,7 @@ dim(txi_south$counts)
 # If we visualize the new txi object, the desired samples have been removed correctly.
 
 ```
+
 
 We will follow 3 approaches, using different designs for performing DESeq2.
 
@@ -167,9 +233,32 @@ resultsNames(dds_water_pop_south)
 
 ```
 
+
 Storing the results.
 
-```{r eval=FALSE, include=FALSE}
+```{r}
+poc_both_Esp_Lla <- results(dds_water_pop_south, contrast= c("populations", "Espajosas", "Llano"))
+summary(poc_both_Esp_Lla, alpha=0.05)
+
+# LFC > 0 (up)       : 8, 0.044%
+# LFC < 0 (down)     : 0, 0%
+
+poc_both_Jab_Lla <- results(dds_water_pop_south, contrast= c("populations", "Jabata", "Llano"))
+summary(poc_both_Jab_Lla, alpha=0.05)
+
+# LFC > 0 (up)       : 11, 0.06%
+# LFC < 0 (down)     : 5, 0.027%
+
+poc_both_Jab_Esp <- results(dds_water_pop_south, contrast= c("populations", "Jabata", "Espajosas"))
+summary(poc_both_Jab_Esp, alpha=0.05)
+
+# LFC > 0 (up)       : 5, 0.027%
+# LFC < 0 (down)     : 5, 0.027%
+
+```
+
+
+```{r}
 
 # Storing the interaction terms between each population and the water level
 
@@ -220,9 +309,27 @@ resultsNames(dds_pop_south)
 
 ```
 
-Storing the results in variables
+Storing the results in variables.
 
 ```{r}
+
+poc_pop_only_Esp_Lla <- results(dds_pop_south, contrast= c("populations", "Espajosas", "Llano"))
+summary(poc_pop_only_Esp_Lla, alpha=0.05)
+
+# LFC > 0 (up)       : 4, 0.022%
+# LFC < 0 (down)     : 2, 0.011%
+
+poc_pop_only_Jab_Lla <- results(dds_pop_south, contrast= c("populations", "Jabata", "Llano"))
+summary(poc_pop_only_Jab_Lla, alpha=0.05)
+
+# LFC > 0 (up)       : 25, 0.14%
+# LFC < 0 (down)     : 24, 0.13%
+
+poc_pop_only_Jab_Esp <- results(dds_pop_south, contrast= c("populations", "Jabata", "Espajosas"))
+summary(poc_pop_only_Jab_Esp, alpha=0.05)
+
+# LFC > 0 (up)       : 17, 0.093%
+# LFC < 0 (down)     : 12, 0.066%
 
 ```
 
@@ -730,9 +837,12 @@ summary(Jab_group_all)
 ```
 
 
+### Only Central Region
+
+From here on, we could do the same analysis as before but only selecting half od the data belonging to the Central region.
 
 
-```{r eval=FALSE, include=FALSE}
+```{r}
 
 # Trying to get the interaction term between population and region 
 
@@ -756,7 +866,7 @@ dim(txi_central$counts)
 #table(exp_central$populations)
 #length(exp_central$populations)
 
-exp_central <- exp_design[region=="Central_Spain", ]
+exp_central <- group_design_pop[region=="Central_Spain", ]
 exp_central
 
 dds_central_pop <- DESeqDataSetFromTximport(
@@ -768,3 +878,28 @@ dds_central_pop <- dds_central_pop[rowSums(counts(dds_central_pop)) >= 10,]
 dds_central_pop <- DESeq(dds_central_pop)
 resultsNames(dds_central_pop)
 ```
+
+Storing the results in variables and visualizing.
+
+```{r}
+
+poc_pop_only_Bui_Can <- results(dds_central_pop, contrast= c("populations", "Canencia", "Buitrago"))
+summary(poc_pop_only_Bui_Can, alpha=0.05)
+
+# LFC > 0 (up)       : 587, 3.3%
+# LFC < 0 (down)     : 833, 4.6%
+
+poc_pop_only_Bui_Tur <- results(dds_central_pop, contrast= c("populations", "Buitrago", "Turrubuelo"))
+summary(poc_pop_only_Bui_Tur, alpha=0.05)
+
+# LFC > 0 (up)       : 435, 2.4%
+# LFC < 0 (down)     : 497, 2.8%
+
+poc_pop_only_Can_Tur <- results(dds_central_pop, contrast= c("populations", "Canencia", "Turrubuelo"))
+summary(poc_pop_only_Can_Tur, alpha=0.05)
+
+# LFC > 0 (up)       : 575, 3.2%
+# LFC < 0 (down)     : 867, 4.8%
+
+```
+
