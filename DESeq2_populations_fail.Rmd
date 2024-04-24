@@ -2,7 +2,10 @@
 title: "DESeq2_populations"
 author: "clagrabel"
 date: "2024-03-18"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -13,6 +16,8 @@ Loading the necessary libraries.
 
 ```{r}
 pacman::p_load(tidyverse, DESeq2)
+
+load("C:/Users/tester/Desktop/MADOBIS/TFM/TFM_Workspace/POC.RData")
 ```
 
 # DOUBT
@@ -25,6 +30,7 @@ Also, I was unable to get the interaction term between population and region. I 
 ## Complete counts matrix, Population and Water Level
 
 From here, we can also get the effect of Population independently.
+
 
 ```{r}
 dds_water_pop <- DESeqDataSetFromTximport(
@@ -341,6 +347,27 @@ Since we already filtered by the populations belonging to the southern region, c
 This design assesses the direct impact of water level changes on gene expression across the southern populations. This can be  useful for understanding environmental stress responses or adaptations.
 
 
+```{r}
+
+dds_water_south <- DESeqDataSetFromTximport(
+  txi = txi_south, 
+  colData = exp_south,
+  design = ~ waterLevel)
+
+dds_water_south <- dds_water_south[rowSums(counts(dds_water_south)) >= 10,]
+dds_water_south <- DESeq(dds_water_south)
+resultsNames(dds_water_south)
+
+poc_water_south<-results(dds_water_south, contrast=c("waterLevel", "high", "low"))
+summary(poc_water_south, alpha=0.05)
+
+# LFC > 0 (up)       : 327, 1.8%
+# LFC < 0 (down)     : 301, 1.7%
+
+```
+
+
+
   + ~ group
   
 Being the group factor a combination of the water level and populations factors in a new column in the experimental design matrix.
@@ -385,10 +412,10 @@ summary(poc_EspH_EspL, alpha=0.05)
 poc_JabH_JabL <- results(dds_south_group, contrast=c("group", "lowJabata", "highJabata"))
 summary(poc_JabH_JabL, alpha=0.05)
 
-# LFC > 0 (up)       : 82, 0.45%
-# LFC < 0 (down)     : 62, 0.34%
+# LFC > 0 (up)       : 1, 0.0055%
+# LFC < 0 (down)     : 7, 0.038%
 # outliers [1]       : 394, 2.2%
-# low counts [2]     : 4395, 24%
+# low counts [2]     : 0, 0%
 
 poc_LlaH_LlaL <- results(dds_south_group, contrast=c("group", "lowLlano", "highLlano"))
 summary(poc_LlaH_LlaL, alpha=0.05)
@@ -399,6 +426,72 @@ summary(poc_LlaH_LlaL, alpha=0.05)
 # low counts [2]     : 4395, 24%
 
 ```
+## Without pre-filtering
+
+```{r}
+dds_south_group_no_prefilter <- DESeqDataSetFromTximport(
+  txi = txi_south, 
+  colData = exp_south,
+  design = ~ group)
+
+dds_south_group_no_prefilter <- DESeq(dds_south_group_no_prefilter)
+
+resultsNames(dds_south_group_no_prefilter)
+```
+
+
+```{r}
+
+no_prefilter_south_EspH_EspL <- results(dds_south_group_no_prefilter, contrast=c("group", "lowEspajosas", "highEspajosas"))
+summary(no_prefilter_south_EspH_EspL, alpha=0.05)
+
+
+# this is before, using pre-filtering
+
+# LFC > 0 (up)       : 6, 0.033%
+# LFC < 0 (down)     : 8, 0.044%
+# outliers [1]       : 394, 2.2%
+# low counts [2]     : 2445, 13%
+
+# this is after, without pre-filtering
+
+# LFC > 0 (up)       : 6, 0.027%
+# LFC < 0 (down)     : 8, 0.036%
+# outliers [1]       : 394, 1.8%
+# low counts [2]     : 6676, 30%
+
+# the only difference is that deseq takes all those genes that we excluded before as low counts so the low counts number is higher
+
+no_prefilter_south_JabH_JabL <- results(dds_south_group_no_prefilter, contrast=c("group", "lowJabata", "highJabata"))
+summary(no_prefilter_south_JabH_JabL, alpha=0.05)
+
+
+# something went wrong here, this is without pre-filtering 
+
+# LFC > 0 (up)       : 1, 0.0045%
+# LFC < 0 (down)     : 7, 0.032%
+# outliers [1]       : 394, 1.8%
+# low counts [2]     : 0, 0%
+
+no_prefilter_south_LlaH_LlaL <- results(dds_south_group_no_prefilter, contrast=c("group", "lowLlano", "highLlano"))
+summary(no_prefilter_south_LlaH_LlaL, alpha=0.05)
+
+# LFC > 0 (up)       : 82, 0.45%
+# LFC < 0 (down)     : 62, 0.34%
+# outliers [1]       : 394, 2.2%
+# low counts [2]     : 4395, 24%
+
+```
+
+```{r}
+check_low_counts <- counts(dds_south_group_no_prefilter) %>%
+  as.data.frame() %>%
+  mutate(sum_counts = rowSums(.)) %>%
+  filter(sum_counts < 10)
+
+dim(check_low_counts)
+```
+
 
 
 ### Each population separately
@@ -450,8 +543,8 @@ resultsNames(dds_Bui_group)
 
 
 ```{r}
-bui_group<-results(dds_Bui_group, name="group_lowBuitrago_vs_highBuitrago")
-summary(bui_group, alpha=0.05)
+Bui_group<-results(dds_Bui_group, name="group_lowBuitrago_vs_highBuitrago")
+summary(Bui_group, alpha=0.05)
 
 
 # LFC > 0 (up)       : 12, 0.073%
@@ -528,8 +621,8 @@ resultsNames(dds_Can_group)
 
 
 ```{r}
-can_group<-results(dds_Can_group, name="group_lowCanencia_vs_highCanencia")
-summary(can_group, alpha=0.05)
+Can_group<-results(dds_Can_group, name="group_lowCanencia_vs_highCanencia")
+summary(Can_group, alpha=0.05)
 
 # LFC > 0 (up)       : 7, 0.044%
 # LFC < 0 (down)     : 5, 0.031%
@@ -579,8 +672,8 @@ resultsNames(dds_Tur_group)
 
 
 ```{r}
-tur_group<-results(dds_Tur_group, name="group_lowTurrubuelo_vs_highTurrubuelo")
-summary(tur_group, alpha=0.05)
+Tur_group<-results(dds_Tur_group, name="group_lowTurrubuelo_vs_highTurrubuelo")
+summary(Tur_group, alpha=0.05)
 
 # LFC > 0 (up)       : 10, 0.06%
 # LFC < 0 (down)     : 1, 0.006%
@@ -629,8 +722,8 @@ resultsNames(dds_Esp_group)
 
 
 ```{r}
-esp_group<-results(dds_Esp_group, name="group_lowEspajosas_vs_highEspajosas")
-summary(esp_group, alpha=0.05)
+Esp_group<-results(dds_Esp_group, name="group_lowEspajosas_vs_highEspajosas")
+summary(Esp_group, alpha=0.05)
 
 # LFC > 0 (up)       : 41, 0.25%
 # LFC < 0 (down)     : 18, 0.11%
@@ -794,7 +887,7 @@ resultsNames(dds_Jab_group)
 
 
 ```{r}
-Jab_group<-results(dds_Jab_group, name="group_lowJabata_vs_highJabata")
+Jab_group<-results(dds_Jab_group, contrast = c("group", "lowJabata", "highJabata"))
 summary(Jab_group, alpha=0.05)
 
 # LFC > 0 (up)       : 2, 0.012%
@@ -903,3 +996,29 @@ summary(poc_pop_only_Can_Tur, alpha=0.05)
 
 ```
 
+```{r}
+dds_central_group <- DESeqDataSetFromTximport(
+  txi = txi_central, 
+  colData = exp_central,
+  design = ~ group)
+
+dds_central_group <- dds_central_group[rowSums(counts(dds_central_group)) >= 10,]
+dds_central_group <- DESeq(dds_central_group)
+resultsNames(dds_central_group)
+```
+
+```{r}
+poc_BuiH_BuiL<- results(dds_central_group, contrast=c("group", "highBuitrago", "lowBuitrago"))
+summary(poc_BuiH_BuiL, alpha=0.05)
+```
+
+```{r}
+poc_CanH_CanL<- results(dds_central_group, contrast=c("group", "highCanencia", "lowCanencia"))
+summary(poc_CanH_CanL, alpha=0.05)
+```
+
+
+```{r}
+poc_TurH_TurL<- results(dds_central_group, contrast=c("group", "highTurrubuelo", "lowTurrubuelo"))
+summary(poc_TurH_TurL, alpha=0.05)
+```

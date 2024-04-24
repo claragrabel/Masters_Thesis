@@ -286,6 +286,7 @@ all_degs_test[c("test_lS_hS","test_lC_hC", "test_lS_lC", "test_hS_hC")] %>%
 ```{r}
 list_test<-all_degs_test[c("test_lS_hS","test_lC_hC", "test_lS_lC", "test_hS_hC", "test_interaction", "test_region", "test_waterLevel")]
 
+
 upset(fromList(list_test),
       number.angles = 0, point.size = 3, line.size = 1,
       sets.x.label = "Number of DEGs",
