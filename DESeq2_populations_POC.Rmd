@@ -26,11 +26,9 @@ I could not get the interaction terms for all populations because it takes one o
 
 Also, I was unable to get the interaction term between population and region. I thought this would provide me with information about the uniformity between populations in the same region.
 
-
 ## Complete counts matrix, Population and Water Level
 
 From here, we can also get the effect of Population independently.
-
 
 ```{r}
 dds_water_pop <- DESeqDataSetFromTximport(
@@ -58,15 +56,22 @@ summary(res_waterLevel, alpha=0.05)
 
 # LFC > 0 (up)       : 52, 0.27%
 # LFC < 0 (down)     : 7, 0.036%
+# outliers [1]       : 0, 0%
+# low counts [2]     : 1140, 5.9%
+# (mean count < 0)
 
 
-# res_water_pop is the comparison obtained for waterLevel_low_vs_high when using as design waterLevel * population
+# res_water_pop is the comparison obtained for waterLevel_low_vs_high when using waterLevel * population as design 
 
 res_water_pop<-results(dds_water_pop, name ="waterLevel_low_vs_high")
 summary(res_water_pop, alpha=0.05)
 
 # LFC > 0 (up)       : 14, 0.072%
 # LFC < 0 (down)     : 9, 0.047%
+# outliers [1]       : 123, 0.64%
+# low counts [2]     : 0, 0%
+# (mean count < 0)
+
 
 ```
 
@@ -94,8 +99,7 @@ summary(pop_Jab_Esp, alpha=0.05)
 
 ```
 
-Populations from the south seem to be closer/more similar between them than populations in the center? At least they have less DEGs between them.
-
+Populations from the south seem to be closer/more similar between them than populations in the centre? At least they have less DEGs between them.
 
 ```{r}
 
@@ -120,8 +124,6 @@ summary(pop_Can_Tur, alpha=0.05)
 # LFC < 0 (down)     : 214, 1.1%
 
 ```
-
-
 
 ```{r}
 
@@ -162,13 +164,11 @@ summary(int_water_Jab, alpha=0.05)
 
 ```
 
-
 # Proof of Concept
 
 ### Only Southern Region
 
 Only using the populations belonging only to the the southern region and performing DESeq2 on this data.
-
 
 ```{r}
 
@@ -194,33 +194,25 @@ dim(txi_south$counts)
 
 ```
 
-
 We will follow 3 approaches, using different designs for performing DESeq2.
 
-  * ~ populations * waterlevel
-  
+-   \~ populations \* waterlevel
+
 In order to see the difference with the previous tests that had both regions.
 
-This design would provide the independent main effect of waterlevel and population on gene expression, where each  factor's influence on gene expression is evaluated separately. The design also provides the interaction between them. 
+This design would provide the independent main effect of waterlevel and population on gene expression, where each factor's influence on gene expression is evaluated separately. The design also provides the interaction between them.
 
-The water level effect would be the effect of changing water levels while holding the population constant. 
-Similarly, the coefficients for population show the effect of different populations at a fixed water level.
-As for the interaction term, it would inform about whether the impact of changing water levels on gene expression differs across different populations.
-
+The water level effect would be the effect of changing water levels while holding the population constant. Similarly, the coefficients for population show the effect of different populations at a fixed water level. As for the interaction term, it would inform about whether the impact of changing water levels on gene expression differs across different populations.
 
 The results will show genes that are differentially expressed due to:
 
-Each population compared to a reference population (assuming other conditions like water level are held constant).
-Each water level compared to a reference water level (assuming populations are held constant).
-Specific combinations of population and water level, indicating interaction effects—where the expression change due to water level differs significantly among populations.
+Each population compared to a reference population (assuming other conditions like water level are held constant). Each water level compared to a reference water level (assuming populations are held constant). Specific combinations of population and water level, indicating interaction effects—where the expression change due to water level differs significantly among populations.
 
-
-_Regarding the Statistics behind DESeq2_
+*Regarding the Statistics behind DESeq2*
 
 DESeq2 treats both waterlevel and population as independent factors affecting gene expression. It will estimate separate effects (log2 fold changes) for each level of waterlevel and population, compared to their respective reference levels. *This is done while controlling for the other variable, meaning it assesses the impact of one factor while holding the other constant.*
 
 Our water level treatment has levels Low and High, and let's say population has levels A and B. If Low and A are reference levels, the model estimates effects of High versus Low (holding population constant) and B versus A (holding water level constant).
-
 
 ```{r}
 
@@ -238,7 +230,6 @@ dds_water_pop_south <- DESeq(dds_water_pop_south)
 resultsNames(dds_water_pop_south)
 
 ```
-
 
 Storing the results.
 
@@ -263,7 +254,6 @@ summary(poc_both_Jab_Esp, alpha=0.05)
 
 ```
 
-
 ```{r}
 
 # Storing the interaction terms between each population and the water level
@@ -285,9 +275,8 @@ summary(int_water_Tur, alpha=0.05)
 
 ```
 
+-   \~ populations
 
- + ~ populations
-  
 Since we already filtered by the populations belonging to the southern region, checking only for the populations effect.
 
 DESeq2 models gene expression differences based solely on population differences. It estimates the effects of each population level compared to a reference population, without considering any other factors like water level.
@@ -296,11 +285,9 @@ If populations are A and B, with A as the reference, the model estimates the eff
 
 All variation in gene expression is analyzed as if it stems only from differences among populations. The analysis proceeds with the assumption that either water level does not impact gene expression, or that its impact is uniformly distributed across all populations.
 
-If water level actually affects gene expression and this effect varies between populations, excluding water level from the model could lead to confounded results. 
+If water level actually affects gene expression and this effect varies between populations, excluding water level from the model could lead to confounded results.
 
-_Confounding in statistics refers to a situation where the effect of a primary independent variable (the factor of interest) on an outcome is mixed up with the effect of a third variable, known as the confounder. The confounder is a variable that influences both the independent variable and the dependent variable, leading to a potential distortion in the estimated relationship between the independent variable and the dependent variable._
-
-
+*Confounding in statistics refers to a situation where the effect of a primary independent variable (the factor of interest) on an outcome is mixed up with the effect of a third variable, known as the confounder. The confounder is a variable that influences both the independent variable and the dependent variable, leading to a potential distortion in the estimated relationship between the independent variable and the dependent variable.*
 
 ```{r}
 
@@ -339,13 +326,11 @@ summary(poc_pop_only_Jab_Esp, alpha=0.05)
 
 ```
 
-
-  + ~ waterLevel
+-   \~ waterLevel
 
 Since we already filtered by the populations belonging to the southern region, checking only for the waterLevel effect.
 
-This design assesses the direct impact of water level changes on gene expression across the southern populations. This can be  useful for understanding environmental stress responses or adaptations.
-
+This design assesses the direct impact of water level changes on gene expression across the southern populations. This can be useful for understanding environmental stress responses or adaptations.
 
 ```{r}
 
@@ -366,10 +351,8 @@ summary(poc_water_south, alpha=0.05)
 
 ```
 
+-   \~ group
 
-
-  + ~ group
-  
 Being the group factor a combination of the water level and populations factors in a new column in the experimental design matrix.
 
 In this design, group is a fusion of populations and waterlevel, with each unique combination treated as a distinct group. This approach is best suited for identifying differential expression patterns that are specific to unique combinations of population and water level.
@@ -378,8 +361,7 @@ The model inherently captures interactions between populations and water levels 
 
 In our case, it is of interest the see the interaction between the population effect and the water effect.
 
-
-Since the levels are "highEspajosas" "highJabata" "highLlano" "lowEspajosas"  "lowJabata" "lowLlano", the reference that DESeq2 takes is the first alphabetically so in this case it's high Espajosas.
+Since the levels are "highEspajosas" "highJabata" "highLlano" "lowEspajosas" "lowJabata" "lowLlano", the reference that DESeq2 takes is the first alphabetically so in this case it's high Espajosas.
 
 This means that what DESeq does it taking each group and comparing it/making it relative to the reference, and then those groups who have been compared to the reference are compared between themselves.
 
@@ -426,6 +408,7 @@ summary(poc_LlaH_LlaL, alpha=0.05)
 # low counts [2]     : 4395, 24%
 
 ```
+
 ## Without pre-filtering
 
 ```{r}
@@ -438,7 +421,6 @@ dds_south_group_no_prefilter <- DESeq(dds_south_group_no_prefilter)
 
 resultsNames(dds_south_group_no_prefilter)
 ```
-
 
 ```{r}
 
@@ -492,11 +474,9 @@ check_low_counts <- counts(dds_south_group_no_prefilter) %>%
 dim(check_low_counts)
 ```
 
+# Each population separately
 
-
-### Each population separately
-
-We will reduce the txi object to only one population in each case and see the results this way.
+We will reduce the txi object to only one population in each case and observe the results this way.
 
 #### Buitrago
 
@@ -522,7 +502,7 @@ dim(txi_Bui$counts)
 
 ```
 
-* Group design
+-   Group design
 
 ```{r}
 # Grouping water level and populations.
@@ -541,7 +521,6 @@ dds_Bui_group <- DESeq(dds_Bui_group)
 resultsNames(dds_Bui_group)
 ```
 
-
 ```{r}
 Bui_group<-results(dds_Bui_group, name="group_lowBuitrago_vs_highBuitrago")
 summary(Bui_group, alpha=0.05)
@@ -549,9 +528,11 @@ summary(Bui_group, alpha=0.05)
 
 # LFC > 0 (up)       : 12, 0.073%
 # LFC < 0 (down)     : 2, 0.012%
+# outliers [1]       : 228, 1.4%
+# low counts [2]     : 2831, 17%
 ```
 
-* Water Level
+-   Water Level
 
 ```{r}
 exp_Bui<-group_design_pop[populations=="Buitrago",]
@@ -573,10 +554,10 @@ summary(bui_water, alpha=0.05)
 
 # LFC > 0 (up)       : 12, 0.073%
 # LFC < 0 (down)     : 2, 0.012%
+# outliers [1]       : 228, 1.4%
+# low counts [2]     : 2831, 17%
 
 ```
-
-
 
 #### Canencia
 
@@ -619,15 +600,15 @@ dds_Can_group <- DESeq(dds_Can_group)
 resultsNames(dds_Can_group)
 ```
 
-
 ```{r}
 Can_group<-results(dds_Can_group, name="group_lowCanencia_vs_highCanencia")
 summary(Can_group, alpha=0.05)
 
 # LFC > 0 (up)       : 7, 0.044%
 # LFC < 0 (down)     : 5, 0.031%
+# outliers [1]       : 108, 0.67%
+# low counts [2]     : 2461, 15%
 ```
-
 
 #### Turrubuelo
 
@@ -670,13 +651,14 @@ dds_Tur_group <- DESeq(dds_Tur_group)
 resultsNames(dds_Tur_group)
 ```
 
-
 ```{r}
 Tur_group<-results(dds_Tur_group, name="group_lowTurrubuelo_vs_highTurrubuelo")
 summary(Tur_group, alpha=0.05)
 
 # LFC > 0 (up)       : 10, 0.06%
 # LFC < 0 (down)     : 1, 0.006%
+# outliers [1]       : 152, 0.92%
+# low counts [2]     : 1284, 7.8%
 ```
 
 #### Espajosas
@@ -720,16 +702,16 @@ dds_Esp_group <- DESeq(dds_Esp_group)
 resultsNames(dds_Esp_group)
 ```
 
-
 ```{r}
 Esp_group<-results(dds_Esp_group, name="group_lowEspajosas_vs_highEspajosas")
 summary(Esp_group, alpha=0.05)
 
 # LFC > 0 (up)       : 41, 0.25%
 # LFC < 0 (down)     : 18, 0.11%
+# outliers [1]       : 422, 2.5%
+# low counts [2]     : 1611, 9.6%
 
 ```
-
 
 #### Llano
 
@@ -772,13 +754,14 @@ dds_Lla_group <- DESeq(dds_Lla_group)
 resultsNames(dds_Lla_group)
 ```
 
-
 ```{r}
 Lla_group<-results(dds_Lla_group, name="group_lowLlano_vs_highLlano")
 summary(Lla_group, alpha=0.05)
 
 # LFC > 0 (up)       : 226, 1.4%
 # LFC < 0 (down)     : 269, 1.6%
+# outliers [1]       : 461, 2.8%
+# low counts [2]     : 3031, 18%
 
 ```
 
@@ -816,8 +799,7 @@ summary(Lla_group_all)
 
 ```
 
-
-* Water design
+-   Water design
 
 ```{r}
 exp_Lla<-group_design_pop[populations=="Llano",]
@@ -839,10 +821,10 @@ summary(Lla_water, alpha=0.05)
 
 # LFC > 0 (up)       : 226, 1.4%
 # LFC < 0 (down)     : 269, 1.6%
+# outliers [1]       : 461, 2.8%
+# low counts [2]     : 3031, 18%
 
 ```
-
-
 
 #### Jabata
 
@@ -885,7 +867,6 @@ dds_Jab_group <- DESeq(dds_Jab_group)
 resultsNames(dds_Jab_group)
 ```
 
-
 ```{r}
 Jab_group<-results(dds_Jab_group, contrast = c("group", "lowJabata", "highJabata"))
 summary(Jab_group, alpha=0.05)
@@ -895,7 +876,6 @@ summary(Jab_group, alpha=0.05)
 # outliers [1]       : 576, 3.5%
 # low counts [2]     : 324, 1.9%
 ```
-
 
 ```{r}
 # Without filtering out those genes with less than 10 counts across all samples.
@@ -929,11 +909,9 @@ summary(Jab_group_all)
 
 ```
 
-
 ### Only Central Region
 
 From here on, we could do the same analysis as before but only selecting half od the data belonging to the Central region.
-
 
 ```{r}
 
@@ -1016,7 +994,6 @@ summary(poc_BuiH_BuiL, alpha=0.05)
 poc_CanH_CanL<- results(dds_central_group, contrast=c("group", "highCanencia", "lowCanencia"))
 summary(poc_CanH_CanL, alpha=0.05)
 ```
-
 
 ```{r}
 poc_TurH_TurL<- results(dds_central_group, contrast=c("group", "highTurrubuelo", "lowTurrubuelo"))

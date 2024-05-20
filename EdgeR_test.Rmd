@@ -1,0 +1,189 @@
+---
+title: "EdgeR_test"
+author: "clagrabel"
+date: "2024-05-08"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+We will use EdgeR to obtain the DEGs for every specific population.
+
+
+In order to process data coming from quasi-mapping tools such as salmon, we used the tximport package creating rds objects which were then loaded into variables.
+
+We will first perform the model for each population separately in order to compare with other tools for DEGs obtention such as DESeq2.
+
+
+```{r}
+library(edgeR)
+```
+
+# Buitrago population
+
+#### Counts matrix for edgeR
+
+```{r}
+counts_edgeR_Bui <- txi_Bui$counts
+```
+
+Defining the design matrix with the sample groups.
+
+```{r}
+group_edgeR <- factor(c(rep("high", 4), rep("low", 4)))
+design_edgeR <- model.matrix(~ group_edgeR)
+
+design_edgeR
+```
+
+Creating the model.
+
+```{r}
+y <- DGEList(counts=counts_edgeR_Bui,group=group_edgeR)
+
+# Librarysize normalization. Normalize the library sizes to make the count data comparable across samples.
+
+keep <- filterByExpr(y)
+y <- y[keep,]
+
+y <- normLibSizes(y)
+
+# Dispersion Estimation. Estimate both common and tagwise dispersion for accurate modeling of count variability.
+y <- estimateDisp(y,design_edgeR)
+
+# Model Fitting. Fit a generalized linear model (GLM) using the quasi-likelihood method, which is robust and provides flexibility in modeling complex experimental designs.
+fit <- glmQLFit(y, design_edgeR)
+
+# Differential Expression Analysis. Perform the differential expression analysis using the quasi-likelihood F-test and the likelihood ratio test. This method is generally robust against outliers and model mis-specifications.
+qlf <- glmQLFTest(fit)
+lrt <- glmLRT(fit)
+
+```
+
+
+Taking all the tests
+
+```{r}
+str(topTags(qlf))
+
+results_qlf <- topTags(qlf, n=Inf)$table
+```
+
+
+```{r}
+results_lrt <- topTags(lrt, n=Inf)$table
+```
+
+
+```{r}
+# DEGs for QLF
+significant_degs_qlf <- results_qlf[results_qlf$FDR < 0.05, ]
+
+# DEGs for LRT
+significant_degs_lrt <- results_lrt[results_lrt$FDR < 0.05, ]
+
+significant_degs_qlf
+significant_degs_lrt
+```
+
+
+the same goes fot lrt method, only 5 DEGs of which 0 have a p-value lower than 0.05.
+
+
+If the try to do a Gene Filtering using a custom function that uses the already existing topTags function to filter results based on adjusted p-value (FDR), we get 0 genes with less than 0.05 adjusted p-value.
+
+
+```{r}
+
+topTags2 <- function(glmfit, fdr=0.05) {
+  z <- topTags(glmfit, n=Inf)  # Retrieve all genes
+  z$table <- z$table[z$table$FDR < fdr,]  # Filter by FDR only
+  return(z$table)
+}
+
+toptags_Bui = topTags2(qlf)
+
+```
+
+```{r}
+str(toptags_Bui)
+```
+
+
+
+# Llano population
+
+In order to process data coming from quasi-mapping tools such as salmon, we used the tximport package creating rds objects which were then loaded into variables.
+
+We will first perform the model for each population separately in order to compare with other tools for DEGs obtention such as DESeq2.
+
+#### Counts matrix for edgeR
+
+```{r}
+counts_edgeR_Lla <- txi_Lla$counts
+
+head(counts_edgeR_Lla)
+```
+
+Defining the design matrix with the sample groups.
+
+```{r}
+group_edgeR <- factor(c(rep("high", 4), rep("low", 4)))
+design_edgeR <- model.matrix(~ group_edgeR)
+
+design_edgeR
+```
+
+Creating the model.
+
+```{r}
+y2 <- DGEList(counts=counts_edgeR_Lla,group=group_edgeR)
+
+# Librarysize normalization. Normalize the library sizes to make the count data comparable across samples.
+
+keep <- filterByExpr(y2)
+y2 <- y2[keep,]
+
+y2 <- normLibSizes(y2)
+
+# Dispersion Estimation. Estimate both common and tagwise dispersion for accurate modeling of count variability.
+y2 <- estimateDisp(y2,design_edgeR)
+
+# Model Fitting. Fit a generalized linear model (GLM) using the quasi-likelihood method, which is robust and provides flexibility in modeling complex experimental designs.
+fit2 <- glmQLFit(y2, design_edgeR)
+
+# Differential Expression Analysis. Perform the differential expression analysis using the quasi-likelihood F-test and the likelihood ratio test. This method is generally robust against outliers and model mis-specifications.
+qlf2 <- glmQLFTest(fit2)
+lrt2 <- glmLRT(fit2)
+
+```
+
+
+```{r}
+qlf2
+```
+
+
+
+Gene Filtering
+We will use a custom function that uses the already existing topTags function to filter results based on both log-fold change and adjusted p-value (FDR). This step refines the results to focus on the most biologically significant changes.
+
+
+```{r}
+
+topTags2 <- function(glmfit, fdr=0.05) {
+  z <- topTags(glmfit, n=Inf)  # Retrieve all genes
+  z$table <- z$table[z$table$FDR < fdr,]  # Filter by FDR only
+  return(z$table)
+}
+
+toptags_Bui = topTags2(qlf)
+
+```
+
+```{r}
+str(toptags_Bui)

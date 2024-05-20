@@ -2,7 +2,9 @@
 title: "DESeq2"
 author: "clagrabel"
 date: "2024-02-29"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -14,7 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 
-#load(file = "C:/Users/tester/Desktop/MADOBIS/TFM/TFM_Github/DESeq2.RData")
+load("C:/Users/tester/Desktop/MADOBIS/TFM/TFM_Workspace/Normal_With_Llano.RData")
 
 pacman::p_load(tidyverse, DESeq2)
 
@@ -155,6 +157,7 @@ Let's obtain the activated and repressed genes for every comparison.
 res_waterLevel <- results(dds, contrast=c("waterLevel", "low", "high"))
 
 summary(res_waterLevel, alpha=0.05)
+
 ```
 
 According to the results, there would be 52 genes which are up-regulated in low water level versus high water level, and 7 which are down-regulated. These would be genes that are differentially expressed in both regions only because of the treatment effect.
@@ -272,7 +275,7 @@ res_hS_hC<-results(dds_group, contrast=c("group", "highSouthern_Spain", "highCen
 summary(res_hS_hC, alpha=0.05)
 ```
 
-2154 up-regulated and 2420 genes down regulated. These would be DEGs accounting for the regional variation in the transcriptome in optimal water conditions, when there is no desiccation stress. 
+2154 up-regulated and 2420 genes down regulated. These would be DEGs accounting for the regional variation in the transcriptome in optimal water conditions, when there is no pond drying stress. 
 
 
 ## Low water in Southern Spain region vs Central Spain
@@ -283,7 +286,7 @@ res_lS_lC<-results(dds_group, contrast=c("group", "lowSouthern_Spain", "lowCentr
 summary(res_lS_lC, alpha=0.05)
 ```
 
-2474 genes up-regulated and 2736 genes down-regulated. These genes are differentially expressed in the distinct regions in low water conditions (drought or dessication stress). 
+2474 genes up-regulated and 2736 genes down-regulated. These genes are differentially expressed in the distinct regions in low water conditions, meaning genes that respond differently regarding pond drying stress. 
 
 
 ```{r eval=FALSE, include=FALSE}
@@ -313,21 +316,24 @@ res_lS_hS<-results(dds_group, contrast=c("group", "lowSouthern_Spain", "highSout
 
 summary(res_lS_hS, alpha=0.05)
 ```
+247 up-regulated and 302 down-regulated. These are genes that are differentially expressed when the southern region populations are exposed to low water level compared to high water level.
+
+
+
+```{r eval=FALSE, include=FALSE}
 
 #DOUBT
-I thought the summary function was already taking out the NAs, but it appears not.
-Two ways of getting the actual number of DEGs, excluding 
+# The summary function already takes out the NAs
 
-However, we will extract the DEGs afterwards and we will already exclude the NAs, it's just that I can't trust these numbers that I get from the summary.
-
-```{r}
+# If will extract the DEGs independently using the filter function, we get the same amount of DEGs.
 
 head(res_lS_hS)
 
 res_lS_hS_filtered_NA<- res_lS_hS %>%
 as_tibble() %>%
-filter(!is.na(padj))
+filter(!is.na(padj)&padj<0.05)
 
+dim(res_lS_hS_filtered_NA)
 
 length(res_lS_hS[is.na(res_lS_hS$padj), ])
 
@@ -335,6 +341,9 @@ res_filtered_south <- res_lS_hS[!is.na(res_lS_hS$padj), ]
 summary(res_filtered_south, alpha=0.05)
 
 sum(res_lS_hS$padj < 0.05, na.rm=TRUE)
+
+
+# 549 is the total number of degs if we sum up those up and down regulated before
 ```
 
 
@@ -347,6 +356,8 @@ res_lC_hC<-results(dds_group, contrast=c("group", "lowCentral_Spain", "highCentr
 
 summary(res_lC_hC, alpha=0.05)
 ```
+
+These are genes that are differentially expressed in the central spain populations when submitted to pond drying stress.
 
 
 ## MA Plots
