@@ -11,24 +11,20 @@ Phenotypic plasticity allows organisms to alter gene expression and phenotype in
 
 ![Workflow](/assets/workflow.jpg)
 
-0. **Exprimental Design**
-   ![Experimental Design](/assets/experimental_design.jpg)  
-
-1. **Sequence Quality Control**
-   [More about Sequence Quality Control](/Quality_Control.Rmd)
-
-2. **Contaminants Removal** (rRNA removal, bbsplit)
+0. Experimental Design
+![Experimental Design](/assets/experimental_design.jpg) 
+    
+1. [Sequence Quality Control](/Quality_Control.Rmd)
+  
+2. **Contaminants Removal**
    [More about Removing Contaminants with bbsplit](/rmd_for_github/Contaminants_Removal_bbsplit.md)
    [More about Removing ribosomal RNA with Ribodetector](/rmd_for_github/ribodetector.md)
 
-4. **Quasi-Mapping and Quantification** (Salmon)
-   [More about Alignment and Mapping](/rmd_for_github/Salmon.Rmd)
+4. [Mapping and Quantification](/rmd_for_github/Salmon.Rmd)
 
-5. **Differential Expression Analysis**
-   [More about Differential Expression Analysis](/DESeq2.Rmd)
+5. [Differential Expression Analysis](/DESeq2.Rmd)
 
-6. **Functional Enrichment Analysis**
-   [More about Functional Enrichment Analysis](/Enrichment.Rmd)
+6. [Functional Enrichment Analysis](/Enrichment.Rmd)
 
 ### About The Research Group
 Learn more about the research group in the following web [Eco-Evo-Devo Lab](/https://www.eco-evo-devo.com/).
