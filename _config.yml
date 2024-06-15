@@ -3,7 +3,7 @@ title: Developmental Plasticity in Spadefoot Toads by RNAseq
 
 description: In this website you will find the information and coding behind my Master's thesis on Developmental Plasticity in Spadefoot Toads from a Transcriptomics approach.
 
-theme: jekyll-theme-cayman
+theme: minimal-mistakes-jekyll
 title:  "Exploring Developmental Plasticity in Spadefoot Toads through Transcriptomics"
 description: "Welcome to my Master's Thesis project!"
 author: Clara Granado Beltrán
