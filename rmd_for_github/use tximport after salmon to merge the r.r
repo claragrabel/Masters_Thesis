@@ -68,10 +68,12 @@ This line checks if all files specified in the files vector exist. It returns TR
 #reading transcript-to-gene mapping
 
 tx2gene <- read.table("Pecu23.transcriptome.mod.genemap")
+tx2gene_limma <- read.table("Pcu23.transcriptome.mod.genemap")
 
 #QUÉ ES ESTE FICHERO EL DE MOD.GENEMAP
 
 colnames(tx2gene)<-c("transcripts","genes")
+colnames(tx2gene_limma)<-c("transcripts","genes")
 
 Reads a transcript-to-gene mapping file. This file maps each transcript ID to a gene ID, which is necessary for aggregating transcript-level estimates to gene-level estimates.
 Sets the column names of the tx2gene data frame to "transcripts" and "genes" for clarity.
@@ -94,6 +96,18 @@ txOut = T indicates that the output should remain at the transcript level.
 The head(txi$counts) function call prints the first few rows of the transcript-level counts to the console, providing a quick peek at the data.
 
 
+txi_limma <- tximport(files, type = "salmon", tx2gene = tx2gene_limma, countsFromAbundance = "lengthScaledTPM")
+
+this is what i got in the console
+
+reading in files with read.delim (install 'readr' package for speed up)
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48
+summarizing abundance
+summarizing counts
+summarizing length
+
+
+
 #genes
 txi.genes <- summarizeToGene(txi, tx2gene)
 head(txi.genes$counts)
@@ -109,5 +123,34 @@ PECUL23A000008            0.0          0.000          0.000            0.00
 
 WHY DOES IT SAY PECULmtDNA
 
+
+txi_genes_limma <- summarizeToGene(txi_limma, tx2gene_limma)
+
+this is what i got in the console 
+transcripts missing from tx2gene: 106234
+summarizing abundance
+summarizing counts
+summarizing length
+Warning message:
+  In .local(object, ...) :
+  the incoming counts have countsFromAbundance = 'lengthScaledTPM',
+and so the original counts are no longer accessible.
+to use countsFromAbundance='no', re-run objectmport() with this setting.
+over-riding 'countsFromAbundance' to set it to: lengthScaledTPM
+
+Since you are using lengthScaledTPM, tximport handles the transformation and 
+summarization simultaneously. If you receive a warning about inaccessible original counts, it’s because the transformation to lengthScaledTPM makes direct use of raw counts infeasible. However, since your objective is to use the transformed counts, you can proceed with the gene-level data obtained
+
+
+This function, summarizeToGene, will utilize the lengthScaledTPM data from txi and aggregate it at the gene level, as you desired.
+
+Handling the Warning Message
+The warning message is informational and confirms that the transformation has occurred as specified. If your analysis goals are met with the lengthScaledTPM data and you are aware that you are not working with the original raw counts, you can proceed with your analysis.
+
+
+
 saveRDS(txi, "salmon_counts.rds")
 saveRDS(txi.genes, "salmon_gene_counts.rds")
+
+saveRDS(txi_limma, "salmon_counts_limma.rds")
+saveRDS(txi_genes_limma, "salmon_gene_counts_limma.rds")

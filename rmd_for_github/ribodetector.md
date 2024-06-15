@@ -79,3 +79,23 @@ This parameter is only necessary for paired end reads. When setting to rrna, the
 
 I have very large input file but limited memory, what should I do?
 You can set the --chunk_size parameter which specifies how many reads the software load into memory once.
+
+
+
+# Log results
+
+Processing Progress:
+
+The log provides updates every time a chunk of 307200 sequences is processed.
+This continues incrementally, showing the progress at regular intervals until completion.
+
+
+Summary Statistics:
+
+Total Sequences Processed: 25,954,399
+Non-rRNA Sequences Detected: 25,931,949
+rRNA Sequences Detected: 22,450
+
+This represents approximately 0.086% of the total sequences, which is a relatively small proportion, suggesting that the majority of your sequences are non-rRNA.
+
+There is no immediate indication of errors or problems in the log. The process seems to have run smoothly, with consistent progress updates.

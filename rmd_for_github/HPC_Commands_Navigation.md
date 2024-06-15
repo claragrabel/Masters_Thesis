@@ -170,6 +170,12 @@ which fastqc
 fastqc --version
 fastqc -h # which displays the help
 
+# listing all environments
+mamba env list
+
+# deactivating the environment
+mamba deactivate
+
 ```
 
 
