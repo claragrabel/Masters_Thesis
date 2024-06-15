@@ -11,7 +11,7 @@ Phenotypic plasticity allows organisms to alter gene expression and phenotype in
 
 ![Workflow](/assets/workflow.jpg)
 
-0. **Exprimental Design and Data Obtention**
+0. **Exprimental Design**
    ![Experimental Design](/assets/experimental_design.jpg)  
 
 1. **Sequence Quality Control**
