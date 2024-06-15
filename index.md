@@ -12,11 +12,9 @@ Phenotypic plasticity allows organisms to alter gene expression and phenotype in
 ![Workflow](/assets/workflow.jpg)
 
 0. **Exprimental Design and Data Obtention**
-   ![Sequence Quality Control](/assets/sequence-quality-control.jpg)  
-   [More about Sequence Quality Control](/Experimental_Design.Rmd)
+   ![Experimental Design](/assets/experimental_design.jpg)  
 
 1. **Sequence Quality Control**
-   ![Sequence Quality Control](/assets/sequence-quality-control.jpg)  
    [More about Sequence Quality Control](/Quality_Control.Rmd)
 
 2. **Contaminants Removal** (rRNA removal, bbsplit)
