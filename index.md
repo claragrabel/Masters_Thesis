@@ -16,11 +16,12 @@ Phenotypic plasticity allows organisms to alter gene expression and phenotype in
     
 1. [Sequence Quality Control](/Quality_Control.Rmd)
   
-2. **Contaminants Removal**
-   [More about Removing Contaminants with bbsplit](/rmd_for_github/Contaminants_Removal_bbsplit.md)
-   [More about Removing ribosomal RNA with Ribodetector](/rmd_for_github/ribodetector.md)
+2. Contaminants Removal
+   
+   [Removing Contaminants with bbsplit](/code_linux/Contaminants_Removal_bbsplit.md)
+   [Removing ribosomal RNA with Ribodetector](/code_linux/ribodetector.md)
 
-4. [Mapping and Quantification](/rmd_for_github/Salmon.Rmd)
+4. [Mapping and Quantification](/code_linux/Salmon.Rmd)
 
 5. [Differential Expression Analysis](/DESeq2.Rmd)
 
