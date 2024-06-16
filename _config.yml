@@ -5,7 +5,6 @@ description: "Welcome to my Master's Thesis project! In this website you will fi
 author: Clara Granado Beltrán
 show_downloads: true
 header:
-  overlay_color: "#60a917"
   image: /assets/sapo_espuelas_Javier_Fuentes_Cuvier.jpg
 navbar_links:
   - title: "Home"
