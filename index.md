@@ -14,7 +14,7 @@ Phenotypic plasticity allows organisms to alter gene expression and phenotype in
 0. Experimental Design
 ![Experimental Design](/assets/experimental_design.jpg) 
     
-1. [Sequence Quality Control](/Quality_Control.Rmd)
+1. [Sequence Quality Control](/code_linux/fastqc.md)
   
 2. Contaminants Removal
    
@@ -22,11 +22,13 @@ Phenotypic plasticity allows organisms to alter gene expression and phenotype in
    
    [Removing ribosomal RNA with Ribodetector](/code_linux/ribodetector.md)
 
-4. [Mapping and Quantification](/code_linux/Salmon.Rmd)
+4. [Mapping and Quantification](/code_linux/Salmon.md)
 
-5. [Differential Expression Analysis](/DESeq2.Rmd)
+   [Data Import into R and Gene-level Aggregation](/code_linux/Tximport.md)
 
-6. [Functional Enrichment Analysis](/Enrichment.Rmd)
+6. [Differential Expression Analysis](/DESeq2.Rmd)
+
+7. [Functional Enrichment Analysis](/Enrichment.Rmd)
 
 ### About The Research Group
 Learn more about the research group in the following web [Eco-Evo-Devo Lab](/https://www.eco-evo-devo.com/).
