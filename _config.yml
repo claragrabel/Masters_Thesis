@@ -4,7 +4,7 @@ title:  "Exploring Developmental Plasticity in Spadefoot Toads through Transcrip
 author: Clara Granado Beltrán
 show_downloads: true
 header:
-  image: /assets/sapo_espuelas_Javier_Fuentes_Cuvier.jpg
+  background_image: /assets/sapo_espuelas_Javier_Fuentes_Cuvier.jpg
 navbar_links:
   - title: "Home"
     url: "/"
