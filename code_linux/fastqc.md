@@ -4,7 +4,7 @@ We will proceed with the fastqc of the raw reads
 
 ### Creating an environment for fastqc
 
-```bash
+```{bash}
 mamba create -n env_fastqc
 
 mamba activate env_fastqc
@@ -17,21 +17,17 @@ fastqc --version
 fastqc -h 
 ```
 
-
 ## fastqc command
 
-```bash
+```{bash}
 fastqc ./*.fq.gz -o ../fastqc_raw --nogroup
 ```
-Explanation of the line of code:
 
 fastqc: This is the command to execute FastQC.
 
-./*.fq.gz: This specifies the input files for FastQC. The ./ represents the current directory, and *.fq.gz is a wildcard that matches all files with the extension .fq.gz (compressed FASTQ files).
-
--o ../fastqc_raw: This option specifies the output directory where FastQC will save the results. In this case, it's set to ../fastqc_raw, indicating that the results will be saved in a directory named fastqc_raw one level up from the current directory.
-
---nogroup: This option tells FastQC not to generate an additional data file containing the results for each individual sequence. Instead, it will generate a single report for all sequences in the input files.
+./*.fq.gz: specifies the input files for FastQC
+-o ../fastqc_raw: specifies the output directory where FastQC will save the results
+--nogroup: this option tells FastQC not to generate an additional data file containing the results for each individual sequence. Instead, it will generate a single report for all sequences in the input files.
 
 ## HTML Reports
 
