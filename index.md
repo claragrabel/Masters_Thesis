@@ -19,6 +19,7 @@ Phenotypic plasticity allows organisms to alter gene expression and phenotype in
 2. Contaminants Removal
    
    [Removing Contaminants with bbsplit](/code_linux/Contaminants_Removal_bbsplit.md)
+   
    [Removing ribosomal RNA with Ribodetector](/code_linux/ribodetector.md)
 
 4. [Mapping and Quantification](/code_linux/Salmon.Rmd)
