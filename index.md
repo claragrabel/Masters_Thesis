@@ -22,7 +22,7 @@ Phenotypic plasticity allows organisms to alter gene expression and phenotype in
    
    [Removing ribosomal RNA with Ribodetector](/code_linux/ribodetector.md)
 
-4. [Mapping and Quantification](/code_linux/Salmon.md)
+4. [Quasi-mapping and Quantification with Salmon](/code_linux/Salmon.md)
 
    [Data Import into R and Gene-level Aggregation](/code_linux/Tximport.md)
 
