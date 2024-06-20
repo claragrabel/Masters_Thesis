@@ -1,6 +1,6 @@
 # Page Settings
-baseurl: "/Masters_Thesis"
-url: "https://github.com/claragrabel"
+baseurl: ""
+url: "https://github.com/claragrabel/Masters_Thesis"
 
 # Theme settings
 remote_theme: daattali/beautiful-jekyll
@@ -14,16 +14,10 @@ title:  "Exploring Developmental Plasticity in Spadefoot Toads through Transcrip
 author: Clara Granado Beltrán
 show_downloads: true
 
-header_image: "/assets/sapo_espuelas_Javier_Fuentes_Cuvier.jpg" 
-header_color: "#388E3C" 
+cover-img: "/assets/sapo_espuelas_Javier_Fuentes_Cuvier.jpg" 
 
-navbar_links:
-  - title: "Home"
-    url: "/"
-  - title: "Workflow"
-    url: "/workflow"
-  - title: "About"
-    url: "/about"
+navbar-links:
+  Home Repository: "https://github.com/claragrabel/Masters_Thesis"
 
 # Footer settings
 footer:
@@ -32,6 +26,10 @@ footer:
       url: "https://github.com/claragrabel/Masters_Thesis"
     - title: "Contact"
       url: "mailto:claragrabel@hotmail.com"
+    - title: "About me"
+      url: "www.linkedin.com/in/claragrabel"
+    - title: "About the group"
+      url: "https://www.eco-evo-devo.com/"
       
 # Code syntax highlighting
 highlighter: rouge
@@ -45,9 +43,15 @@ highlight:
   theme: tomorrow
 
 # Color customization
-color:
-  primary: "#388E3C" # Green color for primary elements (e.g., headers, links)
-  header_text: "#3c763d" # Green color for header text
-  nav_text: "#3c763d" # Green color for navigation text
-  footer_text: "#3c763d" # Green color for footer text
+page-col: "#388E3C"
+text-col: "#404040"
+link-col: "#008AFF"
+hover-col: "#0085A1"
+navbar-col: "#3c763d"
+navbar-text-col: "#404040"
+navbar-border-col: "#DDDDDD"
+footer-col: "#3c763d"
+footer-text-col: "#777777"
+footer-link-col: "#404040"
+footer-hover-col: "#0085A1"
 
