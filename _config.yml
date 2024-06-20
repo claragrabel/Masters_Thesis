@@ -8,10 +8,9 @@ remote_theme: daattali/beautiful-jekyll@6.0.1
 # Structure
 title:  "Exploring Developmental Plasticity in Spadefoot Toads through Transcriptomics"
 author: Clara Granado Beltrán
-avatar: "/assets/Pelobates adult.png"
+avatar: "/assets/sapo_espuelas_Javier_Fuentes_Cuvier.jpg"
 round-avatar: true
-cover-img: "/assets/sapo_espuelas_Javier_Fuentes_Cuvier.jpg" 
-navbar-img: "/assets/sapo_espuelas_Javier_Fuentes_Cuvier.jpg"
+page-img: "/assets/pelobates_white_bg.jpg"
 
 navbar-links:
   Home Repository: "https://github.com/claragrabel/Masters_Thesis"
