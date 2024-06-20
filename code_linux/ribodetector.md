@@ -22,10 +22,8 @@ ribodetector_cpu -t 40 \
 
 * -l parameter: length parameter was set to the mean read length. All our sequences as 100nt long.
 
-* -e parameter: this parameter is only necessary for paired end reads. When setting to rrna, the paired read ends will be predicted as rRNA only if both ends were classified as rRNA. If you want to identify or remove rRNAs with high confidence, you should set it to rrna. Conversely, norrna will predict the read pair as nonrRNA only if both ends were classified as nonrRNA. This setting will only output nonrRNAs with high confidence. both will discard the read pairs with two ends classified inconsistently, only pairs with concordant prediction will be reported in the corresponding output. none will take the mean of the probabilities of both ends and decide the final prediction. 
+* -e parameter: this parameter is only necessary for paired end reads. When setting to rrna, the paired read ends will be predicted as rRNA only if both ends were classified as rRNA. If you want to identify or remove rRNAs with high confidence, you should set it to rrna. Conversely, norrna will predict the read pair as nonrRNA only if both ends were classified as nonrRNA. This setting will only output nonrRNAs with high confidence. both will discard the read pairs with two ends classified inconsistently, only pairs with concordant prediction will be reported in the corresponding output. none will take the mean of the probabilities of both ends and decide the final prediction.
 
-I have very large input file but limited memory, what should I do?
-You can set the --chunk_size parameter which specifies how many reads the software load into memory once.
 
 ### Log results
 
