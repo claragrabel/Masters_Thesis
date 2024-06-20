@@ -8,7 +8,7 @@ remote_theme: daattali/beautiful-jekyll@6.0.1
 # Structure
 title:  "Exploring Developmental Plasticity in Spadefoot Toads through Transcriptomics"
 author: Clara Granado Beltrán
-avatar: "/assets/Pelobates adult.jpg"
+avatar: "/assets/Pelobates adult.png"
 round-avatar: true
 
 navbar-links:
