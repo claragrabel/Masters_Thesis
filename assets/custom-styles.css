@@ -28,3 +28,8 @@
   margin: 0;
   padding: 0;
 }
+
+.main-content {
+  margin-top: 0;
+  padding-top: 0;
+}
