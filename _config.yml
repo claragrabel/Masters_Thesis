@@ -28,7 +28,7 @@ kramdown:
 
 # Color customization
 page-col: "#FFFFFF" # Keeping the page background white for readability
-text-col: "#2F4F4F" # Dark Slate Gray for text, which is easier to read and has a natural tone
+text-col: "#404040" # Dark Slate Gray for text, which is easier to read and has a natural tone
 link-col: "#006400" # Dark Green for links to match the toad theme
 hover-col: "#228B22" # Forest Green for hover effects on links for better visibility
 navbar-col: "#E0EEE0" # Light Green background for the navbar
