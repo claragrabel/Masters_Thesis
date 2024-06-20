@@ -22,6 +22,8 @@ social-network-links:
 # Code syntax highlighting
 markdown: kramdown
 highlighter: rouge
+
+# Kramdown settings
 kramdown:
   input: GFM
 
