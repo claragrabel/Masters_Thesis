@@ -8,8 +8,10 @@ We used Salmon for quantifying transcript abundances from RNA-seq data. Salmon  
 
 ### Creating an environment for salmon
 
+```bash
 mamba create -n env_salmon
 mamba activate env_salmon
+```
 
 ### Installing salmon
 
@@ -88,12 +90,12 @@ SAMPLE=$1: Will store the names of the samples given to the script.
 
 * Inputs:
 
---libType A: Lets salmon identify the type of library
---index: path to the salmon index
---mates1 and --mates2: paths to the paired-end FASTQ files for the sample
---geneMap: path to the genemap file
---validateMappings: Flag to enable more sensitive and accurate mapping. Is generally recommended for all datasets.
---writeMappings=$SAMPLE".salmon.sam": write the mappings (alignments) to a sam file
+  + --libType A: Lets salmon identify the type of library
+  + --index: path to the salmon index
+  + --mates1 and --mates2: paths to the paired-end FASTQ files for the sample
+  + --geneMap: path to the genemap file
+  + --validateMappings: Flag to enable more sensitive and accurate mapping. Is generally recommended for all datasets.
+  + --writeMappings=$SAMPLE".salmon.sam": write the mappings (alignments) to a sam file
 
 * pigz to compress the resulting sam files and reduce their size
 
