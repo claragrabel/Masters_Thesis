@@ -8,45 +8,33 @@ remote_theme: daattali/beautiful-jekyll@6.0.1
 # Structure
 title:  "Exploring Developmental Plasticity in Spadefoot Toads through Transcriptomics"
 author: Clara Granado Beltrán
-title-img: /path/to/image
+title-img: "/assets/Pelobates adult.png" 
 cover-img: "/assets/sapo_espuelas_Javier_Fuentes_Cuvier.jpg" 
 
 navbar-links:
   Home Repository: "https://github.com/claragrabel/Masters_Thesis"
 
 # Footer settings
-footer:
-  links:
-    - title: "Thesis GitHub Repository"
-      url: "https://github.com/claragrabel/Masters_Thesis"
-    - title: "Contact"
-      url: "mailto:claragrabel@hotmail.com"
-    - title: "About me"
-      url: "www.linkedin.com/in/claragrabel"
-    - title: "About the group"
-      url: "https://www.eco-evo-devo.com/"
-      
+social-network-links:
+  email: "claragrabel@hotmail.com"
+  linkedin: "www.linkedin.com/in/claragrabel"
+
 # Code syntax highlighting
-highlighter: rouge
 markdown: kramdown
+highlighter: rouge
 kramdown:
   input: GFM
-  syntax_highlighter: rouge
-
-# Enable syntax highlighting
-highlight:
-  theme: tomorrow
 
 # Color customization
-page-col: "#388E3C"
-text-col: "#404040"
-link-col: "#008AFF"
-hover-col: "#0085A1"
-navbar-col: "#3c763d"
-navbar-text-col: "#404040"
-navbar-border-col: "#DDDDDD"
-footer-col: "#3c763d"
-footer-text-col: "#777777"
-footer-link-col: "#404040"
-footer-hover-col: "#0085A1"
+page-col: "#FFFFFF" # Keeping the page background white for readability
+text-col: "#2F4F4F" # Dark Slate Gray for text, which is easier to read and has a natural tone
+link-col: "#006400" # Dark Green for links to match the toad theme
+hover-col: "#228B22" # Forest Green for hover effects on links for better visibility
+navbar-col: "#E0EEE0" # Light Green background for the navbar
+navbar-text-col: "#2F4F4F" # Dark Slate Gray for navbar text
+navbar-border-col: "#8FBC8F" # Dark Sea Green for navbar borders to blend subtly
+footer-col: "#E0EEE0" # Light Green background for the footer
+footer-text-col: "#556B2F" # Dark Olive Green for footer text to differentiate from main text
+footer-link-col: "#006400" # Dark Green for footer links
+footer-hover-col: "#228B22" # Forest Green for hover effects on footer links
 ---
