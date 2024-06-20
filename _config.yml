@@ -1,3 +1,4 @@
+---
 # Page Settings
 baseurl: ""
 url: "https://github.com/claragrabel/Masters_Thesis"
@@ -54,4 +55,4 @@ footer-col: "#3c763d"
 footer-text-col: "#777777"
 footer-link-col: "#404040"
 footer-hover-col: "#0085A1"
-
+---
