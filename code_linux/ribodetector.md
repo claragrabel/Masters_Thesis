@@ -1,13 +1,17 @@
+---
+layout: page
+---
+
 # Ribodetector
 
 Ribodetector has several modes. It can be run on GPU or CPU. We chose the CPU mode.
 
-```{bash}
+```bash
 %requires pytorch 
 conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
 ```
 
-```{bash}
+```bash
 ribodetector_cpu -t 40 \
   -l 100 \
   -i *_1.fq.gz *_2.fq.gz \
