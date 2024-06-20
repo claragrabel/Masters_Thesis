@@ -1,3 +1,7 @@
+---
+layout: page
+---
+
 # Contaminants removal with bbsplit.sh (from BBMap)
 
 ## Introducing bbsplit
