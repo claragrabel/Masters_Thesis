@@ -1,3 +1,7 @@
+---
+layout: post
+---
+
 # Salmon
 
 We used Salmon for quantifying transcript abundances from RNA-seq data. Salmon  performs both mapping and quantification of RNA-seq reads using a quasi-mapping approach. Instead of performing detailed base-by-base alignments as in traditional mapping, quasi-mapping matches k-mers (short, fixed-length substrings) from the reads to the indexed transcriptome. Once k-mers are matched, reads are assigned to transcripts probabilistically. The likelihood of a read originating from a particular transcript is calculated based on the number of matching k-mers and their distribution. Hence, a read can be fractionally assigned to multiple transcripts taking into account read ambiguity, sequencing errors, and biases inherent in the RNA-seq data; rather than forcing a binary single exact match.
