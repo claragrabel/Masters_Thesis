@@ -1,10 +1,5 @@
 # Page Settings
-theme: "jekyll-theme-text"
-remote_theme: kitian616/jekyll-TeXt-theme
-
-# Plugins
-plugins:
-  - jekyll-remote-theme # this plugin needs to be added when using a remote theme
+theme: jekyll-theme-minimal
 
 title:  "Exploring Developmental Plasticity in Spadefoot Toads through Transcriptomics"
 author: Clara Granado Beltrán
