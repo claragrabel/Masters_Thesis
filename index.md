@@ -1,8 +1,7 @@
 ---
 layout: home
 title: Exploring Developmental Plasticity in Spadefoot Toads
-subtitle: Welcome to my Master's Thesis project page!
-Here, I document my journey in exploring the developmental plasticity of Spadefoot Toads using RNA sequencing (RNAseq). This project aims to uncover the genetic underpinnings of how these amphibians adapt and evolve.
+subtitle: Welcome to my Master's Thesis project page! Here, I document my journey in exploring the developmental plasticity of Spadefoot Toads using RNA sequencing (RNAseq). This project aims to uncover the genetic underpinnings of how these amphibians adapt and evolve.
 ---
 
 ## Summary 
