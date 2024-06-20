@@ -25,6 +25,10 @@ highlighter: rouge
 kramdown:
   input: GFM
 
+# Personalized CSS customization file
+site-css:
+  - "/assets/custom-styles.css"
+
 # Color customization
 page-col: "#FFFFFF" # Keeping the page background white for readability
 text-col: "#404040" # Dark Slate Gray for text, which is easier to read and has a natural tone

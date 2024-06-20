@@ -1,0 +1,30 @@
+.intro-header {
+  background-size: cover;
+  background-position: center;
+  height: 600px; 
+  position: relative;
+  text-align: center;
+  color: white;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.intro-header .overlay {
+  background: rgba(0, 0, 0, 0.5); 
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.intro-header .container {
+  z-index: 1;
+}
+
+.page-title, .page-subtitle {
+  margin: 0;
+  padding: 0;
+}
