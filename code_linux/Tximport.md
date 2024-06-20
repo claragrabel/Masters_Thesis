@@ -15,7 +15,7 @@ mamba activate env_r
 
 After activating the environment, start R by typing R in your terminal and install tximport using the BiocManager package within R:
 
-```{r}
+```r
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install("tximport")
@@ -25,7 +25,7 @@ BiocManager::install("tximport")
 
 These were the steps followed using R.
 
-```{r}
+```r
 # check the current working directory 
 getwd()
 
@@ -52,7 +52,7 @@ With paste0, we are constructing file paths. For each sample name in samples$V1,
 The names of the elements in the files vector are then set to the sample names from samples$V1 for easy reference.
 
 
-```{r}
+```r
 # Checking file existence. It returns TRUE if all files exist and FALSE otherwise.
 
 all(file.exists(files))  
@@ -84,7 +84,7 @@ head(txi$counts)
 
 # Aggregating to the Gene Level
 
-```{r}
+```r
 txi.genes <- summarizeToGene(txi, tx2gene)
 head(txi.genes$counts)
 ```
@@ -100,7 +100,7 @@ PECUL23A000008            0.0          0.000          0.000            0.00
 
 We will save the txi object into an RDS object.
 
-```{r}
+```r
 saveRDS(txi, "salmon_counts.rds")
 saveRDS(txi.genes, "salmon_gene_counts.rds")
 ```
