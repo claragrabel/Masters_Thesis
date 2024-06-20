@@ -1,5 +1,6 @@
 ---
 layout: home
+cover-img: "/assets/sapo_espuelas_Javier_Fuentes_Cuvier.jpg" 
 subtitle: Welcome to my Master's Thesis project page! Here, I document my journey in exploring the developmental plasticity of Spadefoot Toads using RNA sequencing (RNAseq). This project aims to uncover the genetic underpinnings of how these amphibians adapt and evolve.
 ---
 
