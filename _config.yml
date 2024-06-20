@@ -1,11 +1,22 @@
 # Page Settings
-theme: jekyll-theme-minimal
+baseurl: "/Masters_Thesis"
+url: "https://github.com/claragrabel"
 
+# Theme settings
+remote_theme: daattali/beautiful-jekyll
+
+# Build settings
+plugins:
+  - jekyll-remote-theme
+
+# Structure
 title:  "Exploring Developmental Plasticity in Spadefoot Toads through Transcriptomics"
 author: Clara Granado Beltrán
 show_downloads: true
-header:
-  background_image: /assets/sapo_espuelas_Javier_Fuentes_Cuvier.jpg
+
+header_image: "/assets/sapo_espuelas_Javier_Fuentes_Cuvier.jpg" 
+header_color: "#388E3C" 
+
 navbar_links:
   - title: "Home"
     url: "/"
@@ -21,6 +32,7 @@ footer:
       url: "https://github.com/claragrabel/Masters_Thesis"
     - title: "Contact"
       url: "mailto:claragrabel@hotmail.com"
+      
 # Code syntax highlighting
 highlighter: rouge
 markdown: kramdown
@@ -32,6 +44,10 @@ kramdown:
 highlight:
   theme: tomorrow
 
-# Custom colors
+# Color customization
 color:
-  primary: "#3c763d" # Green color
+  primary: "#388E3C" # Green color for primary elements (e.g., headers, links)
+  header_text: "#3c763d" # Green color for header text
+  nav_text: "#3c763d" # Green color for navigation text
+  footer_text: "#3c763d" # Green color for footer text
+
