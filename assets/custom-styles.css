@@ -1,7 +1,7 @@
 .intro-header {
   background-size: cover;
   background-position: center;
-  height: 400px; /* Adjust the height as needed */
+  height: 600px; 
   position: relative;
   text-align: center;
   color: white;
@@ -9,7 +9,7 @@
 }
 
 .intro-header .overlay {
-  background: rgba(0, 0, 0, 0.5); /* Optional: add overlay */
+  background: rgba(0, 0, 0, 0.5); 
   position: absolute;
   top: 0;
   bottom: 0;
