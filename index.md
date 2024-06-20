@@ -1,6 +1,6 @@
 ---
 layout: home
-cover-img: "/assets/sapo_espuelas_Javier_Fuentes_Cuvier.jpg" 
+cover-img: "/assets/pelobates_white_bg.jpg" 
 title: Exploring Developmental Phenotypic Plasticity in Spadefoot Toads
 subtitle: Welcome to my Master's Thesis project page! Here, I document my journey in exploring the developmental plasticity of Spadefoot Toads using RNA sequencing (RNAseq). This project aims to uncover the genetic underpinnings of how these amphibians adapt and evolve.
 ---
