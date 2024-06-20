@@ -1,14 +1,9 @@
 ---
 # Page Settings
-baseurl: ""
 url: "https://github.com/claragrabel/Masters_Thesis"
 
 # Theme settings
-remote_theme: daattali/beautiful-jekyll
-
-# Build settings
-plugins:
-  - jekyll-remote-theme
+remote_theme: daattali/beautiful-jekyll@6.0.1
 
 # Structure
 title:  "Exploring Developmental Plasticity in Spadefoot Toads through Transcriptomics"
