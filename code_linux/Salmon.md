@@ -57,12 +57,12 @@ cat Pcu23.transcriptome.mod.fa $PCU23/Pcu23.ss.fa > Pcu23.gentrome.fa
 
 ```bash
 salmon index -t Pcu23.gentrome.fa -d decoys.txt -p 12 -i Pcu23.salmon.index --gencode
-salmon index: This command is used to create an index for quasi-mapping of RNA-seq reads with salmon.
+# Creating an index for quasi-mapping of RNA-seq reads with salmon.
 ```
 
 ## Quantification with Salmon
 
-We created a script for automating for multiple samples
+We created a script to automate the process for multiple samples.
 
 ```bash
 SAMPLE=$1
