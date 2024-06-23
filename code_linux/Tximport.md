@@ -1,18 +1,21 @@
+---
+layout: page
+---
+
 # Tximport
 
 Using tximport after running salmon (quasi-mapping and quantification of RNA-seq reads) to merge the results and the samples and create a matrix of raw counts. We will also use tximport to aggregate the transcripts counts to the gene level.
 
 We will create an environment with R in the server and install tximport. We will then run tximport from the server and only download the resulting raw counts matrix, abundance matrix (TPM, transcripts per million) and vector containing the lengths of the transcripts.
 
-```{bash}
+```bash
 mamba create -n env_r r-base=4.1.0
-
 mamba activate env_r
 ```
 
 After activating the environment, start R by typing R in your terminal and install tximport using the BiocManager package within R:
 
-```{r}
+```r
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install("tximport")
@@ -22,7 +25,7 @@ BiocManager::install("tximport")
 
 These were the steps followed using R.
 
-```{r}
+```r
 # check the current working directory 
 getwd()
 
@@ -49,7 +52,7 @@ With paste0, we are constructing file paths. For each sample name in samples$V1,
 The names of the elements in the files vector are then set to the sample names from samples$V1 for easy reference.
 
 
-```{r}
+```r
 # Checking file existence. It returns TRUE if all files exist and FALSE otherwise.
 
 all(file.exists(files))  
@@ -79,16 +82,15 @@ head(txi$counts)
 ```
 
 
-# Aggegating to the Gene Level
+# Aggregating to the Gene Level
 
-```{r}
+```r
 txi.genes <- summarizeToGene(txi, tx2gene)
 head(txi.genes$counts)
 ```
 
 This shows the counts of every aggregated gene for each sample. Gene counts are not discrete either.
 
-Tur3H6_nonrrna Tur3L3_nonrrna Tur4H2_nonrrna Tur4L13_nonrrna
 PECUL_mtDNA         1424008.1    1208873.216    1633178.667      1278942.20
 PECUL_nrDNA          419575.0     395344.842     438608.499       410829.99
 PECUL23A000004         1200.4       1088.917        752.906          564.74
@@ -98,7 +100,7 @@ PECUL23A000008            0.0          0.000          0.000            0.00
 
 We will save the txi object into an RDS object.
 
-```{r}
+```r
 saveRDS(txi, "salmon_counts.rds")
 saveRDS(txi.genes, "salmon_gene_counts.rds")
 ```

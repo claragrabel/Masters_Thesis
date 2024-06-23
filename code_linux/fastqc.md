@@ -1,10 +1,14 @@
+---
+layout: page
+---
+
 # Performing Quality Control with FastQC
 
 We will proceed with the fastqc of the raw reads
 
 ### Creating an environment for fastqc
 
-```{bash}
+```bash
 mamba create -n env_fastqc
 
 mamba activate env_fastqc
@@ -19,7 +23,7 @@ fastqc -h
 
 ## fastqc command
 
-```{bash}
+```bash
 fastqc ./*.fq.gz -o ../fastqc_raw --nogroup
 ```
 

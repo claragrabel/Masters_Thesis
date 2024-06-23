@@ -11,7 +11,7 @@ subtitle: Welcome to my Master's Thesis project page! Here, I document my journe
 
 ## The RNAseq Workflow
 
-![Workflow](/assets/workflow.jpg)
+![Workflow](/assets/workflow.png)
 
 1. Experimental Design
 ![Experimental Design](/assets/experimental_design.jpg) 

@@ -1,4 +1,6 @@
-.intro-header {
+/* Habilitating cover images in the header of pages, conditioned to the presence of a cover image */
+
+.intro-header.has-cover {
   background-size: cover;
   background-position: center;
   height: 600px; 
@@ -27,4 +29,31 @@
 .page-title, .page-subtitle {
   margin: 0;
   padding: 0;
+}
+
+.main-content {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+/* Code customization for all codes of chunk appearing in my GitHub page, which are mostly bash and R*/
+
+code {
+  background-color: #f5f5f5;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+pre {
+  background-color: #f5f5f5;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+pre code.bash {
+  color: #d9534f; 
+}
+
+pre code.r {
+  color: #2b8cbe; 
 }
