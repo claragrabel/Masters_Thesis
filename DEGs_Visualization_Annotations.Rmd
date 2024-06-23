@@ -1,0 +1,473 @@
+---
+title: "DEGs_Visualization_Annotations"
+author: "clagrabel"
+date: "2024-06-23"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# DEGs Visualization
+
+### Loading the necessary packages
+
+```{r}
+#BiocManager::install("apeglm", force=TRUE)
+library(apeglm)
+
+pacman::p_load(tidyverse, DESeq2, ggVennDiagram, UpSetR, plotly, ggrepel, scico)
+```
+
+
+## Loading the data
+
+```{r}
+# DEG object
+dds1 <- readRDS("./results/deseq2_regions_dds.rds")
+
+
+# The list of DEG results
+res<-readRDS("./results/deseq2_regions_results_local.rds")
+summary(res)
+
+```
+
+## Extracting Significant DEGs
+
+Extract DEGs lists in order to visualize overlapping regulated genes in the comparison of interest.
+
+```{r}
+# List of DEGs
+
+# Creating a function to extract the lists of genes repeteadly: all DEGs, up-regulated DEGs and down-regulated DEGs.
+
+extract_degs<-function(x) {
+  return(
+    x %>%
+      as_tibble(rownames = "gene") %>%
+      filter(padj<0.05) %>%
+      pull(gene)
+  )
+}
+
+extract_up<-function(x) {
+  return(
+    x %>%
+      as_tibble(rownames = "gene") %>%
+      filter(padj<0.05) %>%
+      filter(log2FoldChange>0) %>%
+      pull(gene)
+  )
+}
+
+extract_down<-function(x) {
+  return(
+    x %>%
+      as_tibble(rownames = "gene") %>%
+      filter(padj<0.05) %>%
+      filter(log2FoldChange<0) %>%
+      pull(gene)
+  )
+}
+
+# Extracting all differentially expressed genes from all the comparisons stored in the list of DESeqResults.
+
+sig_degs<-lapply(res, FUN=extract_degs)
+str(sig_degs)
+
+up_degs<-lapply(res, FUN=extract_up)
+down_degs<-lapply(res, FUN=extract_down)
+
+```
+
+## Venn Diagram
+
+```{r}
+library(ggVennDiagram)
+library(scico)
+
+sig_degs %>%
+  ggVennDiagram(edge_size = 0) +
+  scale_fill_scico(palette = "batlow") +
+  theme(legend.position="none")
+
+```
+
+
+
+### Upset Plot
+
+
+```{r}
+
+# Plot Upset
+
+upset(fromList(sig_deg),
+      nsets = length(sig_deg),
+      keep.order = T,
+      nintersects = 100,
+      number.angles = 0, point.size = 3, line.size = 1,
+      sets.x.label = "Number of DEGs",
+      set_size.show = TRUE,
+      set_size.scale_max = max(sapply(sig_deg, length))+50, # needed only to expand the axis a bit
+      text.scale = c(1.2, 1.2, 1.2, 1.2, 1.5, 1.5),
+      sets.bar.color = c("skyblue","chartreuse3"),
+      order.by=c("degree","freq"))
+
+```
+
+
+
+
+## Loading the Annotations
+
+
+This annotation file contains all _P. cultripes_ transcripts by rows. As columns, we can find:
+* The gene IDs for _P. cultripes_, followed by the transcripts IDs and the peptides IDs (gene_id, transcript_id, peptide_id)
+* The IDs  and descriptions of _X. tropicalis_ annotated proteome resulting from both nucleotide and peptide blasting against _P. cultripes_ transcripts (xenx_pep_id, xenx_gene_symbol, xenx_description, xenp_pep_id, xenp_gene_symbol, xenp_description).
+
+
+```{r}
+# The annotation file
+xtrop<-read_csv("./xtr109/diamondblast109.csv")
+
+```
+
+
+However, this annotation file contains multiple annotations per gene. This means, in the columns corresponding to the results of BLASTing the genes, the fields (ID field or description field), we can find more than one element that is associated to one only gene.
+
+g:Profiler is unable to process these entries, therefore we have to choose only one annotation for each gene.
+Ee will group the data by the gene IDs and then concatenate the multiple annotations for each gene, separating them by a pipe (|).
+
+
+```{r}
+# Load necessary libraries
+library(dplyr)
+library(tidyr)
+
+# Concatenate multiple annotations per gene, separated by '|'
+processed_annotations <- xtrop %>%
+  group_by(gene_id) %>%
+  summarise(
+    transcript_id = paste(unique(transcript_id), collapse = "|"),
+    peptide_id = paste(unique(peptide_id), collapse = "|"),
+    xenx_pep_id = paste(unique(xenx_pep_id), collapse = "|"),
+    xenx_gene_symbol = paste(unique(xenx_gene_symbol), collapse = "|"),
+    xenx_description = paste(unique(xenx_description), collapse = "|"),
+    xenp_pep_id = paste(unique(xenp_pep_id), collapse = "|"),
+    xenp_gene_symbol = paste(unique(xenp_gene_symbol), collapse = "|"),
+    xenp_description = paste(unique(xenp_description), collapse = "|")
+  )
+
+# Write the processed data back to a file
+write.csv(processed_annotations, "processed_annotations.csv", row.names = FALSE)
+```
+
+
+
+## Volcano plot
+
+Showing the log fold change plotted against the -log10() transformed adjusted p-values per gene. To make small p-values very large, the p-values are usually.
+
+```{r fig.height=12, fig.width=20}
+gg_res <- res %>%
+  lapply(as_tibble,rownames = "gene_id") %>%
+  bind_rows(.id="comparison") %>%
+  drop_na(padj) %>% # drop all genes with NAs
+  filter(padj<0.5) %>% # reduce the number of points that need to be plotted
+  mutate(sig= padj<0.05 & abs(log2FoldChange)>=0) %>% # make a variable to indicate if a gene is significant based on a specific thresholds
+  left_join(xtrop, by=c("gene_id")) %>% # add annotations
+  ggplot(aes(x=log2FoldChange, y=-log10(padj), color=sig,
+            text=paste0("</br>Pcu23 gene: ", gene_id,
+                        "</br>X.tr peptide: ", xenp_pep_id,
+                       "</br>X.tr description: ", xenp_description
+                       )
+         )) +
+  geom_point(alpha=0.75, shape=16) +
+  facet_wrap(~comparison, ncol = 2, scales = "free") +
+  xlim(-10,10) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+gg_res
+```
+
+
+
+```{r fig.height=5, fig.width=20}
+gg_res <- res %>%
+  lapply(as_tibble, rownames = "gene_id") %>%
+  bind_rows(.id = "comparison") %>%
+  drop_na(padj) %>% # drop all genes with NAs
+  filter(padj < 0.5) %>% # reduce the number of points that need to be plotted
+  mutate(
+    category = case_when(
+      padj < 0.05 & log2FoldChange > 0 ~ "Upregulated",
+      padj < 0.05 & log2FoldChange < 0 ~ "Downregulated",
+      TRUE ~ "Non-significant"
+    )
+  ) %>% # categorize points
+  left_join(xtrop, by = c("gene_id")) %>% # add annotations
+  ggplot(aes(
+    x = log2FoldChange, y = -log10(padj), color = category,
+    text = paste0("</br>Pcu23 gene: ", gene_id,
+                  "</br>X.tr peptide: ", xenp_pep_id,
+                  "</br>X.tr description: ", xenp_description)
+  )) +
+  geom_point(alpha = 0.75, shape = 16) +
+  scale_color_manual(values = c(
+    "Non-significant" = "#808080",
+    "Upregulated" = "#FF5733",
+    "Downregulated" = "#0F8CBA"
+  )) +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed", color = "#808080") +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "#808080") +
+  facet_wrap(~comparison, ncol = 2, scales = "free", 
+             labeller = labeller(comparison = c(
+               "central" = "Central Spain", 
+               "south" = "Southern Spain"
+             ))) +
+  xlim(-10, 10) +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  ggtitle("Volcano Plots for Differential Expression Analysis")
+
+gg_res
+```
+
+## Central Volcano Plot
+
+
+```{r}
+
+central_data <- res$central %>%
+  as_tibble(rownames = "gene_id") %>%
+  drop_na(padj) %>% # drop all genes with NAs
+  filter(padj < 0.5) %>% # reduce the number of points that need to be plotted
+  mutate(
+    category = case_when(
+      padj < 0.05 & log2FoldChange > 0 ~ "Upregulated",
+      padj < 0.05 & log2FoldChange < 0 ~ "Downregulated",
+      TRUE ~ "Non-significant"
+    )
+  ) %>%
+  left_join(xtrop, by = c("gene_id")) # add annotations
+
+# Calculate the number of upregulated and downregulated genes
+n_upregulated <- sum(central_data$category == "Upregulated")
+n_downregulated <- sum(central_data$category == "Downregulated")
+
+# Create the plot
+gg_central <- central_data %>%
+  ggplot(aes(
+    x = log2FoldChange, y = -log10(padj), color = category,
+    text = paste0("</br>Pcu23 gene: ", gene_id,
+                  "</br>X.tr peptide: ", xenp_gene_symbol,
+                  "</br>X.tr description: ", xenp_description)
+  )) +
+  geom_point(alpha = 0.75, shape = 16) +
+  scale_color_manual(values = c(
+    "Non-significant" = "#808080",
+    "Upregulated" = "#FF5733",
+    "Downregulated" = "#0F8CBA"
+  )) +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed", color = "#555555") +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "#555555") +
+  annotate("text", x = 8, y = max(-log10(central_data$padj), na.rm = TRUE) - 0.5, 
+           label = paste0("Up-regulated: ", n_upregulated), color = "#FF5733", hjust = 1) +
+  annotate("text", x = -8, y = max(-log10(central_data$padj), na.rm = TRUE) - 0.5, 
+           label = paste0("Down-regulated: ", n_downregulated), color = "#0F8CBA", hjust = 0) +
+  xlim(-10, 10) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    plot.title = element_text(hjust = 0.5) # Center the title
+  ) +
+  ggtitle("Volcano Plot for Central Spain Differential Expression Analysis")
+
+gg_central
+
+
+```
+
+
+## South Volcano Plot
+
+
+```{r}
+south_data <- res$south %>%
+  as_tibble(rownames = "gene_id") %>%
+  drop_na(padj) %>% # drop all genes with NAs
+  filter(padj < 0.5) %>% # reduce the number of points that need to be plotted
+  mutate(
+    category = case_when(
+      padj < 0.05 & log2FoldChange > 0 ~ "Upregulated",
+      padj < 0.05 & log2FoldChange < 0 ~ "Downregulated",
+      TRUE ~ "Non-significant"
+    )
+  ) %>%
+  left_join(xtrop, by = c("gene_id")) # add annotations
+
+# Calculate the number of upregulated and downregulated genes
+n_upregulated <- sum(south_data$category == "Upregulated")
+n_downregulated <- sum(south_data$category == "Downregulated")
+
+# Create the plot
+gg_south <- south_data %>%
+  ggplot(aes(
+    x = log2FoldChange, y = -log10(padj), color = category,
+    text = paste0("</br>Pcu23 gene: ", gene_id,
+                  "</br>X.tr peptide: ", xenp_pep_id,
+                  "</br>X.tr description: ", xenp_description)
+  )) +
+  geom_point(alpha = 0.75, shape = 16) +
+  scale_color_manual(values = c(
+    "Non-significant" = "#808080",
+    "Upregulated" = "#FF5733",
+    "Downregulated" = "#0F8CBA"
+  )) +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed", color = "#555555") +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "#555555") +
+  annotate("text", x = 8, y = max(-log10(south_data$padj), na.rm = TRUE) - 0.5, 
+           label = paste0("Up-regulated: ", n_upregulated), color = "#FF5733", hjust = 1) +
+  annotate("text", x = -8, y = max(-log10(south_data$padj), na.rm = TRUE) - 0.5, 
+           label = paste0("Down-regulated: ", n_downregulated), color = "#0F8CBA", hjust = 0) +
+  xlim(-10, 10) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    plot.title = element_text(hjust = 0.5) # Center the title
+  ) +
+  ggtitle("Volcano Plot for Southern Spain Differential Expression Analysis")
+
+gg_south
+
+```
+
+## Getting information about interesting genes
+
+### Thyroid related genes
+
+```{r}
+# Load necessary libraries
+library(dplyr)
+library(stringr)
+
+# Keywords of interest related to thyroid hormone
+
+# Function to extract relevant information based on description keywords
+extract_info_by_keywords <- function(deseq_result, keywords, xtrop) {
+  as_tibble(deseq_result, rownames = "gene_id") %>%
+    left_join(xtrop, by = "gene_id") %>% # Add peptide descriptions
+    filter(if_any(everything(), ~ str_detect(., paste(keywords, collapse = "|")))) %>% # Filter based on keywords in any column
+    arrange(padj)
+}
+
+# Extract information for central and south based on keywords
+central_info <- extract_info_by_keywords(res$central, c("thyroid"), xtrop)
+south_info <- extract_info_by_keywords(res$south, c("thyroid"), xtrop)
+
+# ~ str_detect(., ...): This is the anonymous function created using ~.
+# .: Represents each column in turn (the current column being processed).
+# str_detect(., ...): Checks if the current column contains any of the specified keywords.
+
+
+# Possibility of combining the information
+# combined_info <- full_join(central_info, south_info, by = c("gene_id", "xenp_description"), suffix = c("_central", "_south"))
+
+# Print the combined information
+# print(combined_info)
+```
+
+
+#### Central region
+
+```{r}
+central_info
+```
+
+In the central region, there are no terms associated with the thyroid hormone that are significant (adjusted p-value lower than 0.05)
+
+
+#### Southern region
+
+```{r}
+south_info
+```
+
+However for the southern region, we do recover some thyroid related genes that have lower adjusted p-value than 0.05.
+
+* thibz, thyroid hormone induced bZip protein [Source:Xenbase;Acc:XB-GENE-484679]; padj=0.001235922
+
+(the next gene is already over padj 0.05: trip4,	thyroid hormone receptor interactor 4 [Source:Xenbase;Acc:XB-GENE-974186]; padj=0.066677105)
+
+
+Thyroid hormone: We expect genes related to this or its receptor to be more highly expressed in the south. Indeed we find a greater log fold change in the south (1.382 vs. 0.0599),
+and a p value of 0.0078, but due to low mean expression counts, DESeq2 has flagged it as an unreliable estimate. Nonetheless we recover thibz as significantly up regulated as well as DUOX2. This is a direct response gene to TH and involved in organ remodeling during metamorphosis
+
+I CANNOT FIND DUOX2 AS DEG
+
+
+
+### Urea cycle related genes
+
+```{r}
+extract_info_by_keywords(res$central, c("urea", "ass1", "arg2"), xtrop)
+
+extract_info_by_keywords(res$south, c("urea", "ass1", "arg2"), xtrop)
+```
+No significant DEGs in central.
+
+South:
+* ass1, argininosuccinate synthase 1 [Source:Xenbase;Acc:XB-GENE-977784], padj=0.003197872
+* arg2, arginase 2 [Source:Xenbase;Acc:XB-GENE-482624], padj=0.003584074
+
+Urea cycle: arg2 and ass1 are over expressed in the south, both are involved in urea syntheis. This is something that happens during metamorphosis in amphibians.
+
+
+### CORT related genes
+
+
+```{r}
+extract_info_by_keywords(res$central, c("CORT", "corticosterone", "hsp90", "klf9"), xtrop)
+
+extract_info_by_keywords(res$south, c("CORT", "corticosterone", "hsp90", "klf9"), xtrop)
+```
+
+No significant DEGs in the central region.
+
+South:
+* hsp90aa1.1 heat shock protein 90kDa alpha family class A member 1 [Source:Xenbase;Acc:XB-GENE-49530...] padj=0.005406117
+* klf9 Kruppel-like factor 9 [Source:Xenbase;Acc:XB-GENE-483889]; padj=0.034931505
+
+CORT: we expect higher levels of corticosterone, which affects many downstream genes such as: klf9, hsp90
+
+
+### Leptin/lipid metabolism related genes
+
+We expect accelerated larvae to be metabolising fats more readily. accordingly, we see DEGs such as leprotl1
+
+### Apoptosis
+
+mmp11 is up regulated, which is responsible for TH-induced cell death during metamorphosis
+
+
+#### Interactive Volcano Plots
+
+```{r}
+# we can now turn this into an interactive plot:
+ggplotly(gg_central, tooltip="text")
+```
+
+
+
+#### Interactive Volcano Plots
+
+```{r}
+# we can now turn this into an interactive plot:
+ggplotly(gg_south, tooltip="text")
+```
