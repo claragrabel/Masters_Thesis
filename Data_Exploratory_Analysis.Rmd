@@ -1,0 +1,129 @@
+---
+title: "Data_Exploratory_Analysis"
+author: "clagrabel"
+date: "2024-06-24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+In this document, we will analyse RNAseq data (counts resulting from Salmon, aggregated at gene level using Tximport) using DESeq2. 
+Data consists of 6 _Pelobates Cultripes_ populations (from 2 geographic regions), each population being subjected to benign conditions (constant high water level) and stressful conditions (low water level).
+
+
+## Load the data
+
+We load and store the data into a variable called txi.
+
+```{r}
+txi<-readRDS("salmon_gene_counts.rds")
+```
+
+We will load the libraries needed for this script.
+
+```{r}
+# use pacman to load libraries
+pacman::p_load(DESeq2, tidyverse, fdrtool, UpSetR, GGally)
+```
+
+
+# Exploring the data
+
+```{r, include=FALSE}
+class(txi)
+str(txi)
+lapply(X=txi, FUN=head)
+```
+
+The txi object is a list with 4 entries, three matrices (abundance, counts, length) and 1 character vector (countsFromAbundance).
+
+The dimensions of each matrix are 106236 rows as the genes and 48 columns as the sample_id. This means the transcripts have been aggregated into 106236 genes.
+
+
+Here is a brief description of each element in the txi object: 
+* Counts: Estimate of the number of reads mapping to each transcript.
+* Abundance: Normalized counts in Transcripts Per Million (TPM). This means that per sample, the total counts add up to 1 million. Raw counts cannot be compared across sample_id because each library may vary slightly in terms of the total number of reads, differences in sequencing bias and difference in transcript lengths. 
+
+```{r}
+apply(X=txi$abundance, FUN=sum, MARGIN = 2)
+```
+
+* Length: Effective length of the target transcript.
+* countsFromAbundance: A character vector indicating whether counts were taken directly from the quantifier (salmon) or whether they have been calculated from the abundances by tximport. Default is no (counts are from salmon).
+
+
+Moreover, we can appreciate that the two first rows correspond to transcripts that mapped against mithocondrial RNA and non-coding RNA (nuclear ribosomal RNA) decoys introduced in the reference transcriptome. 
+
+We will remove these.
+
+_Regarding the non-coding RNA, we can see high counts in the counts matrix (without any normalization). Non-coding RNA molecules are abundant in the cell and are often not fully removed during RNA purification processes. All the transcripts were aggregated into one only "gene" or row called nrRNA, therefore showing a higher length  in the length matrix. Longer transcripts are expected to garner more reads simply because they provide more binding sites for the sequencing reads. Thus, in the abundance matrix their abundance is adjusted downward to account for their length._
+
+
+# Filtering out mtRNA and nrRNA
+
+We have to filter out the first two rows of every matrix. These two rows correspond to the mitochondrial RNA and nuclear ribosomal RNA that mapped against the decoys introduced in the reference transcriptome.
+
+Moreover, there are genes named with the prefix "PECUL23nc" that are also non-coding, and non codinn RNA baits (nr baits). We have to find these genes and remove them. too.
+
+
+```{r}
+
+# Remove mtDNA, non-coding and nr baits
+
+# make a list of genes we want to keep
+whitelist<-txi$counts %>%
+  as_tibble(rownames = "gene_id") %>%
+  filter(!str_detect(gene_id, pattern = "mt|nr|nc")) %>%
+  pull(gene_id)
+
+length(whitelist);head(whitelist) # we are keeping 32531 genes
+
+# filter txi tables
+txi$abundance<-txi$abundance[whitelist,]
+txi$counts<-txi$counts[whitelist,]
+txi$length<-txi$length[whitelist,]
+```
+
+
+# Load design matrix
+
+Load the design matrix for the dds object. 
+
+```{r}
+
+des.mat<-read_csv("./design_matrix.csv")
+
+# Re-order factor levels
+des.mat <- des.mat %>%
+  mutate(population=factor(population, levels=c("Bui","Can","Tur","Esp","Jab","Lla"))) %>% # re-order factors for easy plotting later
+  mutate(pop_n = factor(rep(rep(1:3,each=8),2))) %>% # The new variable pop_n created in the code does not depend on the levels of the population factor and is created independently by repeating a sequence. Hence, pop_n is non-nested with respect to population. 
+  mutate_if(is.character, as.factor) # convert characters to factor
+
+```
+
+
+# Filtering out samples
+
+We will filter samples that had substantially lower library size (Jab) and a potential outlier (Bui).
+
+```{r}
+
+des.mat<-des.mat %>%
+  filter(!sample_id %in% c("Bui4H14_nonrrna","Jab5H6_nonrrna")) 
+
+# filter txi tables
+txi$abundance<-txi$abundance[,as.character(des.mat$sample_id)]
+txi$counts<-txi$counts[,as.character(des.mat$sample_id)]
+txi$length<-txi$length[,as.character(des.mat$sample_id)]
+
+## get column order of counts matrix and re-order des.mat to match
+col_order<-match(colnames(txi$counts),des.mat$sample_id)
+des.mat<-des.mat[col_order,]
+des.mat$sample_id==colnames(txi$counts)
+
+des.mat
+```
+
