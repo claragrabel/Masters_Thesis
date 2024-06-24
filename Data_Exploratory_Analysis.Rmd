@@ -127,3 +127,134 @@ des.mat$sample_id==colnames(txi$counts)
 des.mat
 ```
 
+
+
+# Pre-filtering
+
+The results function of the DESeq2 package that we will be using afterwards, performs its own independent filtering by default using the mean of normalized counts as a filter statistic. However, it might be worth applying a pre-filtering step with the aim of reducing the size of the matrix, speeding up downstream calculations and reducing memory requirements. This is also recommended in DESeq2 documentation.
+
+```{r}
+
+# Looking at the distribution without any filtering. Representing the sum of counts for each gene across all samples 
+
+rowSums(counts(dds)) %>%
+          enframe() %>%
+  ggplot(aes(x=value)) +
+  geom_histogram() +
+  scale_x_log10()
+
+# We will apply 2 different filters, a mild one and a strict one
+
+dds1<-dds[rowSums(counts(dds) >= 1) >= 12,] # genes that have at least 1 count for 12 samples (e.g. one per treatment per population)
+dim(dds1) # we are left with ~18k genes 
+
+dds2<-dds[rowSums(counts(dds) >= 50) >= 12,] # genes that have at least 10 counts for 12 samples (e.g. one per treatment per population)
+dim(dds2) # we are left with ~11k genes 
+```
+
+
+
+## Principal Component Analysis
+ 
+Although the Differential Expression Analysis utilizes raw count data, for visualization or clustering, it makes more sense to use normalized data. DESeq authors argue that Variance Stabilized Transformation (VST) or regularized logarithm (rlog) have certain advantages. VST is faster, i.e. good for large datasets, rlog is more often used for small datasets. 
+
+```{r}
+# VST transformation
+vst_dds<-vst(dds, blind = T) # no filtering
+vst_dds1<-vst(dds1, blind = T) # mild filtering
+vst_dds2<-vst(dds2, blind = T) # hard filtering
+
+# Perform PCA on transposed scaled, centered data
+vst_pca<- prcomp(t(assay(vst_dds)),  center = T)
+vst_pca1<- prcomp(t(assay(vst_dds1)), center = T)
+vst_pca2<- prcomp(t(assay(vst_dds2)), center = T)
+
+```
+
+
+We will use plot paired plots to display multiple axes at once. The densities on the diagonal are also useful for seeing which PC does the best job at separating out treatments. 
+
+### PCA emphasizing regions
+
+```{r}
+vst_pca$x %>%
+  as_tibble(rownames = "sample_id") %>%
+  left_join(des.mat) %>% # add the experimental design information
+  ggpairs(columns = c("PC1", "PC2", "PC3", "PC4","PC5","PC6"), aes(color=region, shape=treatment)) +
+  scale_color_manual(values = c("South" = "#50C878", "Central" = "#0F8CBA")) +
+  ggtitle("VST PCA (no filtering)")
+
+
+vst_pca1$x %>%
+  as_tibble(rownames = "sample_id") %>%
+  left_join(des.mat) %>% # add the experimental design information
+  ggpairs(columns = c("PC1", "PC2", "PC3", "PC4","PC5","PC6"),  aes(color=region, shape=treatment)) +
+  ggtitle("VST PCA (mild liftering)")
+
+vst_pca2$x %>%
+  as_tibble(rownames = "sample_id") %>%
+  left_join(des.mat) %>% # add the experimental design information
+  ggpairs(columns = c("PC1", "PC2", "PC3", "PC4","PC5","PC6"),  aes(color=region, shape=treatment)) +
+  ggtitle("VST PCA (hard liftering)")
+
+#vst_pca2$x[,colnames(vst_pca$x)=="PC5"]<(-40)
+
+# using canned function from DESeq2
+#plotPCA(vst_dds, intgroup=c("region"), ntop=Inf) +
+#  coord_fixed()
+
+```
+
+Here we can quite clearly see that the strongest effect is that of the region. PC1 separates them out quite neatly.
+
+Filtering doesn't have a noticeable effect.
+
+### PCA emphasizing treatment
+```{r}
+vst_pca1$x %>%
+  as_tibble(rownames = "sample_id") %>%
+  left_join(des.mat) %>% # add the experimental design information
+  ggpairs(columns = c("PC1", "PC2", "PC3", "PC4","PC5","PC6"),  aes(color=treatment, shape=region)) +
+  ggtitle("VST PCA")
+```
+
+Plotting the same PCA, but colouring treatments rather than regions, shows that we have to go down to PC3 to start getting treatment separations. PC1 vs PC3 may give us the best separation of both region and treatment.
+
+We can plot specific axes again to highlight some of this more clearly.
+
+```{r}
+
+# calculate hulls
+pca_hull <- 
+  vst_pca1$x %>% 
+  as_tibble(rownames = "sample_id") %>%
+  left_join(des.mat) %>%
+  group_by(population, treatment) %>% 
+  dplyr::slice(chull(PC1, PC3))
+
+# plot PCA and facet into different populations
+vst_pca1$x %>%
+  as_tibble(rownames = "sample_id") %>%
+  left_join(des.mat) %>% # add the experimental design information
+  ggplot(aes(x=PC1, y=PC3, color=population, shape=treatment)) +
+  geom_hline(yintercept = 0, linewidth=0.1) +
+  geom_vline(xintercept = 0, linewidth=0.1) +
+  geom_point(size=3) +
+  geom_polygon(data = pca_hull,
+               aes(fill = population,
+                   colour = population,
+                   linetype=treatment),
+               alpha = 0.1,
+               show.legend = FALSE) +
+  ggrepel::geom_text_repel(aes(label=sample_id),size=2) +
+  scale_color_manual(values=c("Bui"="#900C3F", "Can"="#FF5733", "Tur"="#FFC300",
+                              Esp="#0FBA3D", "Jab"="#0FBA93", "Lla"="#0F8CBA"))+
+  scale_fill_manual(values=c("Bui"="#900C3F", "Can"="#FF5733", "Tur"="#FFC300",
+                              Esp="#0FBA3D", "Jab"="#0FBA93", "Lla"="#0F8CBA"))+
+  facet_wrap(~population) +
+  theme_minimal()
+
+```
+
+
+we can just about see that the warm colours (central populations) are found on the left side of the plotting area and the green colours (southern) on the right side. So PC1 is splitting regions quite well. the Y axis (PC3) on the other hand is fairly consistently splitting the triangles from the squares (except for maybe in Tur). So we are getting a consistent treatment signal too.

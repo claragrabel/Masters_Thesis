@@ -84,6 +84,7 @@ down_degs<-lapply(res, FUN=extract_down)
 
 ```
 
+
 ## Venn Diagram
 
 ```{r}
@@ -165,8 +166,8 @@ processed_annotations <- xtrop %>%
 
 # Write the processed data back to a file
 write.csv(processed_annotations, "processed_annotations.csv", row.names = FALSE)
+head(processed_annotations)
 ```
-
 
 
 ## Volcano plot
@@ -180,7 +181,7 @@ gg_res <- res %>%
   drop_na(padj) %>% # drop all genes with NAs
   filter(padj<0.5) %>% # reduce the number of points that need to be plotted
   mutate(sig= padj<0.05 & abs(log2FoldChange)>=0) %>% # make a variable to indicate if a gene is significant based on a specific thresholds
-  left_join(xtrop, by=c("gene_id")) %>% # add annotations
+  left_join(processed_annotations, by=c("gene_id")) %>% # add annotations
   ggplot(aes(x=log2FoldChange, y=-log10(padj), color=sig,
             text=paste0("</br>Pcu23 gene: ", gene_id,
                         "</br>X.tr peptide: ", xenp_pep_id,
