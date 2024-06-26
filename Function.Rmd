@@ -149,11 +149,27 @@ xtr_bg_all<-xtr_bg %>%
 
 ```
 
-## Functional Enrichment Analysis
+## Functional Enrichment Analysis with g:Profiler
 
-Here, we will use [g:Profiler])(https://biit.cs.ut.ee/gprofiler/), because it plays particularly well with R and with Ensembl gene/peptide annotations.  
+We will use g:Profiler tool, which is a web-based tool for functional enrichment analysis of gene lists. 
+
+The associated R package for g:Profiler is gprofiler2, which is an API (Application Programming Interface). This API serves as a bridge that allows performing the actual analysis within the g:Profiler server, by using the R environment in RStudio.
+
+g:Profiler is continuously being updated to match the updates in the associated Ensembl and Ensembl Genomes Data Bases. Because of this, it is important to specify which version of g:Profiler, and therefore Ensembl version, we would like to use. 
+We will do this by looking at the archives on the g:Profiler homepage and setting the base url for the desired version.
+
+Our annotations resulted from BLASTing _P. cultripes_ transcriptome against the 109 Ensembl release of the _X. tropicalis_ proteome, therefore we will use Ensembl 109, Ensembl Genomes 56 (database built on 2023-03-29).
+
 
 ```{r}
+
+# Install and load the gprofiler2 package. This package provides functions to access the gprofiler API directly from R. 
+
+# install.packages("gprofiler2")
+library(gprofiler2)
+
+# Setting the base url
+
 # set base url:
 set_base_url("https://biit.cs.ut.ee/gprofiler_archive3/e109_eg56_p17/")
 
@@ -165,16 +181,52 @@ res_ora<-gost(multi_query = FALSE, # returns separate results tables for multiqu
               exclude_iea = FALSE, # include GO terms that were electronically assigned
               correction_method = "gSCS", # the recommended multiple testing correction.
               sources=c("GO:BP","GO:CC","GO:MF", "KEGG","REAC"), # the functional sets we are interested in 
-              evcodes=FALSE, ## evcodes TRUE needed for downstream analysis like enrichment maps in Cytoscape, but this takes longer.
+              evcodes=FALSE, # evcodes TRUE needed for downstream analysis like enrichment maps in Cytoscape, but it takes longer
               significant= FALSE) # return all terms, not just the significant ones
 
 
-# the results are stored as a "results" dataframe 
+# The results are stored as a "results" dataframe 
 head(res_ora$result)
 ```
 
+Let's look at the enrichment results in detail
 
-We can use a p_value cutoff of 0.05 to see how many terms have been functionally enriched in each term.
+```{r}
+colnames(test_ora$result)
+```
+
+* **query**: This column represents the gene set or query submitted to g:Profiler for enrichment analysis. Each row corresponds to a different gene set or query.
+
+* **significant**: This column indicates whether the enrichment analysis identified the term (functional category) as statistically significant. It contains a boolean value (TRUE or FALSE).
+
+* **p_value**: This column contains the adjusted p-values. Each p-value indicates the statistical significance of enrichment of a given term in the gene set.
+
+* **term_size**: This column represents the total number of genes in a specific term (functional category).
+
+* **query_size**: This column represents the total number of genes in the submitted query or gene set.
+
+* **intersection_size**: This column represents the number of genes that are shared between the submitted query and the term being analyzed. That is, how many genes from both term size and query size are overlapping. 
+
+* **term_id**: This column contains the unique identifier (ID) associated with the term (functional category) being analyzed.
+
+* **term_name: This column contains the name or description of the term (functional category) being analyzed.**
+
+* source: This column indicates the data source or database from which the term originates and that we requested (Gene Ontology, KEGG, Reactome).
+
+* precision: This column represents the proportion of the genes shared between the submitted query and the term being analyzed, relative to the total number of genes in the query. It measures the accuracy of the enrichment analysis. A higher precision value indicates that a larger proportion of the genes in the intersection are relevant to the term being analyzed, relative to the total number of genes in the query. In other words, it reflects how well the term represents the genes in the query.
+
+* recall: This column represents the proportion of the genes in the intersection, the same as the precision column, but relative to the total number of genes in the term. It reflects how well the term represents the genes in the dataset or background.
+
+* effective_domain_size: This column represents the effective domain size used in the enrichment analysis. It is a statistical parameter used to calculate the p-value.
+
+* source_order: This column represents the order or rank of the source (data database) based on its importance or relevance in the enrichment analysis.
+
+* parents: This column contains information about the parent terms or higher-level categories to which the analyzed term belongs. It may provide additional hierarchical context for the analyzed terms.
+
+
+## Analyzing the results
+
+We can use a p-value cutoff of 0.05 to see how many terms have been functionally enriched in each gene set.
 
 ```{r}
 res_ora$result %>%
@@ -210,7 +262,7 @@ res_ora$result %>%
   ggplot(aes(x=GeneRatio, y=term_name)) +
   geom_point(aes(color=p_value, size=intersection_size)) +
   ylab("") +
-  # scale_color_scico(palette = "vikO", direction = 1) +
+  scale_color_scico(palette = "bamako", direction = 1) +
   facet_grid(source~query,scales = "free_y",space = "free") +
   theme_bw()
 ```
