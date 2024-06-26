@@ -135,7 +135,7 @@ The results function of the DESeq2 package that we will be using afterwards, per
 
 ```{r}
 
-# Looking at the distribution without any filtering. Representing the sum of counts for each gene across all samples 
+# Looking at the distribution without any filtering. Representing the sum of counts for each gene across all samples.
 
 rowSums(counts(dds)) %>%
           enframe() %>%
@@ -172,8 +172,6 @@ vst_pca2<- prcomp(t(assay(vst_dds2)), center = T)
 ```
 
 
-We will use plot paired plots to display multiple axes at once. The densities on the diagonal are also useful for seeing which PC does the best job at separating out treatments. 
-
 ### PCA emphasizing regions
 
 ```{r}
@@ -181,7 +179,6 @@ vst_pca$x %>%
   as_tibble(rownames = "sample_id") %>%
   left_join(des.mat) %>% # add the experimental design information
   ggpairs(columns = c("PC1", "PC2", "PC3", "PC4","PC5","PC6"), aes(color=region, shape=treatment)) +
-  scale_color_manual(values = c("South" = "#50C878", "Central" = "#0F8CBA")) +
   ggtitle("VST PCA (no filtering)")
 
 
@@ -197,19 +194,14 @@ vst_pca2$x %>%
   ggpairs(columns = c("PC1", "PC2", "PC3", "PC4","PC5","PC6"),  aes(color=region, shape=treatment)) +
   ggtitle("VST PCA (hard liftering)")
 
-#vst_pca2$x[,colnames(vst_pca$x)=="PC5"]<(-40)
-
-# using canned function from DESeq2
-#plotPCA(vst_dds, intgroup=c("region"), ntop=Inf) +
-#  coord_fixed()
-
 ```
 
-Here we can quite clearly see that the strongest effect is that of the region. PC1 separates them out quite neatly.
+ The diagonal displays the density distributions of a specific individual PC. The scatterplots show the pairwise relationships between different PCs, where each point represents a sample, colored by treatment and shaped by region. The X axis corresponds to the PC on the right and the Y axis corresponds to the PC on the top. Correlation coefficients quantify the linear relationship between the pair of PCs for each region. PC1 separates regions and PC3 separates treatments.
 
 Filtering doesn't have a noticeable effect.
 
 ### PCA emphasizing treatment
+
 ```{r}
 vst_pca1$x %>%
   as_tibble(rownames = "sample_id") %>%
@@ -218,9 +210,9 @@ vst_pca1$x %>%
   ggtitle("VST PCA")
 ```
 
-Plotting the same PCA, but colouring treatments rather than regions, shows that we have to go down to PC3 to start getting treatment separations. PC1 vs PC3 may give us the best separation of both region and treatment.
+Same PCA but colouring treatments instead of regions. It is not until susequent PCs that we get a treatment effect. PC1 vs PC3 may give us the best separation of both region and treatment.
 
-We can plot specific axes again to highlight some of this more clearly.
+Plot specific axes again to highlight some of this more clearly.
 
 ```{r}
 
@@ -247,14 +239,14 @@ vst_pca1$x %>%
                alpha = 0.1,
                show.legend = FALSE) +
   ggrepel::geom_text_repel(aes(label=sample_id),size=2) +
-  scale_color_manual(values=c("Bui"="#900C3F", "Can"="#FF5733", "Tur"="#FFC300",
-                              Esp="#0FBA3D", "Jab"="#0FBA93", "Lla"="#0F8CBA"))+
-  scale_fill_manual(values=c("Bui"="#900C3F", "Can"="#FF5733", "Tur"="#FFC300",
-                              Esp="#0FBA3D", "Jab"="#0FBA93", "Lla"="#0F8CBA"))+
+  scale_color_manual(values=c("Bui"="#0FBA3D", "Can"="#0FBA93", "Tur"="#0F8CBA",
+                              Esp="#900C3F", "Jab"="#FF5733", "Lla"="#FFC300"))+
+  scale_fill_manual(values=c("Bui"="#0FBA3D", "Can"="#0FBA93", "Tur"="#0F8CBA",
+                              Esp="#900C3F", "Jab"="#FF5733", "Lla"="#FFC300"))+
   facet_wrap(~population) +
   theme_minimal()
 
 ```
 
 
-we can just about see that the warm colours (central populations) are found on the left side of the plotting area and the green colours (southern) on the right side. So PC1 is splitting regions quite well. the Y axis (PC3) on the other hand is fairly consistently splitting the triangles from the squares (except for maybe in Tur). So we are getting a consistent treatment signal too.
+Warm colours (southern populations) are found on the left side of the plotting area and cold colours (central populations) on the right side. So PC1 is splitting regions quite well. the Y axis (PC3) on the other hand is fairly consistently splitting the triangles from the squares. 
