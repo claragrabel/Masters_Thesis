@@ -16,10 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ### Loading the necessary packages
 
 ```{r}
-#BiocManager::install("apeglm", force=TRUE)
-library(apeglm)
-
-pacman::p_load(tidyverse, DESeq2, ggVennDiagram, UpSetR, plotly, ggrepel, scico)
+pacman::p_load(tidyverse, DESeq2, ggVennDiagram, UpSetR, plotly, ggrepel, scico, apeglm)
 ```
 
 
@@ -31,7 +28,7 @@ dds1 <- readRDS("./results/deseq2_regions_dds.rds")
 
 
 # The list of DEG results
-res<-readRDS("./results/deseq2_regions_results_local.rds")
+res<-readRDS("./results/deseq2_regions_results.rds")
 summary(res)
 
 ```
@@ -43,7 +40,7 @@ Extract DEGs lists in order to visualize overlapping regulated genes in the comp
 ```{r}
 # List of DEGs
 
-# Creating a function to extract the lists of genes repeteadly: all DEGs, up-regulated DEGs and down-regulated DEGs.
+# Creating a function to extract the lists of genes repeatedly: all DEGs, up-regulated DEGs and down-regulated DEGs.
 
 extract_degs<-function(x) {
   return(
@@ -88,15 +85,16 @@ down_degs<-lapply(res, FUN=extract_down)
 ## Venn Diagram
 
 ```{r}
-library(ggVennDiagram)
-library(scico)
+
+scico_palette_show()
 
 sig_degs %>%
   ggVennDiagram(edge_size = 0) +
-  scale_fill_scico(palette = "batlow") +
+  scale_fill_scico(palette = "roma") +
   theme(legend.position="none")
 
 ```
+
 
 
 
@@ -107,14 +105,14 @@ sig_degs %>%
 
 # Plot Upset
 
-upset(fromList(sig_deg),
-      nsets = length(sig_deg),
+upset(fromList(sig_degs),
+      nsets = length(sig_degs),
       keep.order = T,
       nintersects = 100,
       number.angles = 0, point.size = 3, line.size = 1,
       sets.x.label = "Number of DEGs",
       set_size.show = TRUE,
-      set_size.scale_max = max(sapply(sig_deg, length))+50, # needed only to expand the axis a bit
+      set_size.scale_max = max(sapply(sig_degs, length))+200, 
       text.scale = c(1.2, 1.2, 1.2, 1.2, 1.5, 1.5),
       sets.bar.color = c("skyblue","chartreuse3"),
       order.by=c("degree","freq"))
@@ -123,32 +121,11 @@ upset(fromList(sig_deg),
 
 
 
-
-## Loading the Annotations
-
-
-This annotation file contains all _P. cultripes_ transcripts by rows. As columns, we can find:
-* The gene IDs for _P. cultripes_, followed by the transcripts IDs and the peptides IDs (gene_id, transcript_id, peptide_id)
-* The IDs  and descriptions of _X. tropicalis_ annotated proteome resulting from both nucleotide and peptide blasting against _P. cultripes_ transcripts (xenx_pep_id, xenx_gene_symbol, xenx_description, xenp_pep_id, xenp_gene_symbol, xenp_description).
-
-
-```{r}
-# The annotation file
-xtrop<-read_csv("./xtr109/diamondblast109.csv")
-
-```
-
-
-However, this annotation file contains multiple annotations per gene. This means, in the columns corresponding to the results of BLASTing the genes, the fields (ID field or description field), we can find more than one element that is associated to one only gene.
-
-g:Profiler is unable to process these entries, therefore we have to choose only one annotation for each gene.
-Ee will group the data by the gene IDs and then concatenate the multiple annotations for each gene, separating them by a pipe (|).
-
-
-```{r}
+```{r include=FALSE, echo=FALSE}
 # Load necessary libraries
 library(dplyr)
 library(tidyr)
+
 
 # Concatenate multiple annotations per gene, separated by '|'
 processed_annotations <- xtrop %>%
@@ -170,6 +147,33 @@ head(processed_annotations)
 ```
 
 
+
+```{r include=FALSE, echo=FALSE}
+
+# Function to process annotations
+process_annotations <- function(df, columns_to_process, split_delimiter = ";", concat_delimiter = "|") {
+  df %>%
+    mutate(across(all_of(columns_to_process), ~ {
+      # Split the annotations
+      split_annotations <- str_split(., split_delimiter) 
+      # Unlist and get unique annotations
+      unique_annotations <- unique(unlist(split_annotations))
+      # Concatenate back with the new delimiter
+      paste(unique_annotations, collapse = concat_delimiter)
+    }))
+}
+
+# Define the columns that need to be processed
+columns_to_process <- c("xenx_pep_id", "xenx_gene_symbol", "xenx_description", "xenp_pep_id", "xenp_gene_symbol", "xenp_description")
+
+# Process the annotations
+processed_annotations_2 <- process_annotations(xtrop, columns_to_process)
+
+# Save the processed annotations back to a CSV file (if needed)
+#write.csv(processed_annotations_2, "processed_annotations.csv", row.names = FALSE)
+```
+
+
 ## Volcano plot
 
 Showing the log fold change plotted against the -log10() transformed adjusted p-values per gene. To make small p-values very large, the p-values are usually.
@@ -181,7 +185,7 @@ gg_res <- res %>%
   drop_na(padj) %>% # drop all genes with NAs
   filter(padj<0.5) %>% # reduce the number of points that need to be plotted
   mutate(sig= padj<0.05 & abs(log2FoldChange)>=0) %>% # make a variable to indicate if a gene is significant based on a specific thresholds
-  left_join(processed_annotations, by=c("gene_id")) %>% # add annotations
+  left_join(processed_annotations_2, by=c("gene_id")) %>% # add annotations
   ggplot(aes(x=log2FoldChange, y=-log10(padj), color=sig,
             text=paste0("</br>Pcu23 gene: ", gene_id,
                         "</br>X.tr peptide: ", xenp_pep_id,
@@ -240,6 +244,7 @@ gg_res <- res %>%
 gg_res
 ```
 
+
 ## Central Volcano Plot
 
 
@@ -256,7 +261,7 @@ central_data <- res$central %>%
       TRUE ~ "Non-significant"
     )
   ) %>%
-  left_join(xtrop, by = c("gene_id")) # add annotations
+  left_join(processed_annotations_2, by = c("gene_id")) # add annotations
 
 # Calculate the number of upregulated and downregulated genes
 n_upregulated <- sum(central_data$category == "Upregulated")
@@ -349,9 +354,104 @@ gg_south
 
 ```
 
+
+
+
 ## Getting information about interesting genes
 
 ### Thyroid related genes
+
+
+```{r}
+extract_info_by_keywords <- function(deseq_result, keywords, xtrop) {
+  as_tibble(deseq_result, rownames = "gene_id") %>%
+    left_join(xtrop, by = "gene_id") %>% # Add peptide descriptions
+    filter(if_any(everything(), ~ str_detect(., paste(keywords, collapse = "|")))) %>% # Filter based on keywords in any column
+    arrange(padj)
+}
+
+central_info <- extract_info_by_keywords(res$central, c("thyroid", "duox2"), xtrop)
+south_info <- extract_info_by_keywords(res$south, c("thyroid", "duox2"), xtrop)
+
+```
+
+
+```{r}
+res_par<-readRDS("./results/deseq2_regions_results.rds")
+```
+
+```{r}
+pull_genes<-function(x, alpha=0.05, lfc=0, signed="both", feature="xenp_gene_symbol") {
+  
+  # filter by adjusted p
+  x<-x %>%
+    filter(padj<alpha)
+  
+  if(signed=="up"){
+    x<-x %>%
+      filter(log2FoldChange>lfc) %>%
+      pull(feature)
+  }
+  
+  if(signed=="down"){
+    x<-x %>%
+      filter(log2FoldChange<(lfc*-1)) %>%
+      pull(feature) 
+  }
+  
+  if(signed=="both"){
+    x<-x %>%
+      filter(abs(log2FoldChange)>lfc) %>%
+      pull(feature) 
+  }
+  
+  ## deal with multiple gene annotations for the same gene (different transcripts)
+  
+  x<-strsplit(x, ";") %>% unlist() %>% unique()
+  x<-x[!is.na(x)]
+  
+  return(x[!is.na(x)])
+}
+
+# now extract all
+
+degs_ids<-lapply(res, FUN=function(x) 
+  x %>%
+  as_tibble(rownames = "gene_id") %>%
+  left_join(xtrop) %>%
+    pull_genes(feature = "gene_id", alpha = 0.05, lfc=0, signed = "both")
+)
+str(degs_ids)
+```
+
+
+
+```{r}
+extract_info <- function(sig_genes, deseq_result, xtrop) {
+  # Convert DESeq results to tibble
+  deseq_tibble <- as_tibble(deseq_result, rownames = "gene_id")
+  
+  # Filter DESeq results for significant DEGs based on gene_id
+  filtered_deseq_result <- deseq_tibble %>%
+    filter(gene_id %in% sig_genes)
+  
+  # Perform left join with annotation data
+  detailed_info <- filtered_deseq_result %>%
+    left_join(xtrop, by = "gene_id")
+  
+  return(detailed_info)
+}
+
+sig_degs_central <- extract_info(degs_ids$central, res$central, xtrop) %>%
+    arrange(padj)
+sig_degs_south <- extract_info(degs_ids$south, res$south, xtrop) %>%
+    arrange(padj)
+
+sig_degs_central
+```
+
+
+
 
 ```{r}
 # Load necessary libraries
@@ -361,20 +461,24 @@ library(stringr)
 # Keywords of interest related to thyroid hormone
 
 # Function to extract relevant information based on description keywords
+
 extract_info_by_keywords <- function(deseq_result, keywords, xtrop) {
+  # Define the columns to process
+  character_columns <- c("gene_id", "transcript_id", "peptide_id", "xenx_pep_id", "xenx_gene_symbol", "xenx_description", "xenp_pep_id", "xenp_gene_symbol", "xenp_description")
   as_tibble(deseq_result, rownames = "gene_id") %>%
-    left_join(xtrop, by = "gene_id") %>% # Add peptide descriptions
-    filter(if_any(everything(), ~ str_detect(., paste(keywords, collapse = "|")))) %>% # Filter based on keywords in any column
-    arrange(padj)
+    left_join(xtrop, by = "gene_id") %>%
+    rowwise() %>%
+    filter(any(sapply(unlist(strsplit(c_across(all_of(character_columns)), ";")), function(x) any(str_detect(x, paste(keywords, collapse = "|")))))) %>%
+    arrange(padj) %>%
+    ungroup()
 }
 
 # Extract information for central and south based on keywords
-central_info <- extract_info_by_keywords(res$central, c("thyroid"), xtrop)
-south_info <- extract_info_by_keywords(res$south, c("thyroid"), xtrop)
+central_info <- extract_info_by_keywords(res$central, c("thyroid", "duox2"), xtrop)
+south_info <- extract_info_by_keywords(res$south, c("thyroid", "duox2"), xtrop)
 
-# ~ str_detect(., ...): This is the anonymous function created using ~.
-# .: Represents each column in turn (the current column being processed).
-# str_detect(., ...): Checks if the current column contains any of the specified keywords.
+# ~ str_detect(., ...): This is the anonymous function created using ~
+# str_detect(., ...): Checks if the current column contains any of the specified keywords
 
 
 # Possibility of combining the information
@@ -411,7 +515,6 @@ Thyroid hormone: We expect genes related to this or its receptor to be more high
 and a p value of 0.0078, but due to low mean expression counts, DESeq2 has flagged it as an unreliable estimate. Nonetheless we recover thibz as significantly up regulated as well as DUOX2. This is a direct response gene to TH and involved in organ remodeling during metamorphosis
 
 I CANNOT FIND DUOX2 AS DEG
-
 
 
 ### Urea cycle related genes
@@ -452,9 +555,29 @@ CORT: we expect higher levels of corticosterone, which affects many downstream g
 
 We expect accelerated larvae to be metabolising fats more readily. accordingly, we see DEGs such as leprotl1
 
+```{r}
+
+extract_info_by_keywords(res$central, c("lipid", "leptin", "leprotl1"), xtrop)
+
+extract_info_by_keywords(res$south, c("lipid", "leptin", "leprotl1"), xtrop)
+
+```
+
+
+
 ### Apoptosis
 
 mmp11 is up regulated, which is responsible for TH-induced cell death during metamorphosis
+
+
+```{r}
+
+extract_info_by_keywords(res$central, c("mmp11", "apoptosis", xtrop)
+
+extract_info_by_keywords(res$south, c("lipid", "leptin", "leprotl1"), xtrop)
+
+```
+
 
 
 #### Interactive Volcano Plots
