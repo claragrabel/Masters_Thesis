@@ -243,10 +243,6 @@ gostplot(res_ora)
 ```
 
 
-```{r}
-scico_palette_show()
-```
-
 
 ## Dotplot
 
@@ -262,7 +258,7 @@ res_ora$result %>%
   ggplot(aes(x=GeneRatio, y=term_name)) +
   geom_point(aes(color=p_value, size=intersection_size)) +
   ylab("") +
-  scale_color_scico(palette = "bamako", direction = 1) +
+  # scale_color_scico(palette = "bamako", direction = 1) +
   facet_grid(source~query,scales = "free_y",space = "free") +
   theme_bw()
 ```
