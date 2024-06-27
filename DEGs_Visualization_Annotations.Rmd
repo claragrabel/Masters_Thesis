@@ -11,6 +11,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
 # DEGs Visualization
 
 ### Loading the necessary packages
@@ -28,7 +29,7 @@ dds1 <- readRDS("./results/deseq2_regions_dds.rds")
 
 
 # The list of DEG results
-res<-readRDS("./results/deseq2_regions_results.rds")
+res<-readRDS("./results/deseq2_regions_results_local.rds")
 summary(res)
 
 ```
@@ -86,15 +87,60 @@ down_degs<-lapply(res, FUN=extract_down)
 
 ```{r}
 
-scico_palette_show()
-
-sig_degs %>%
+sig_degs_set %>%
   ggVennDiagram(edge_size = 0) +
-  scale_fill_scico(palette = "roma") +
-  theme(legend.position="none")
+  theme(
+    legend.position = "none")
+  #   plot.margin = unit(c(1, 1, 1, 1), "cm") # Adjust the margins to create space for labels
+  # ) +
+  # annotate("text", x = c(-1, 1), y = c(2.5, 2.5), label = c("central", "south"), size = 4)
 
 ```
 
+```{r}
+library(ggvenn)
+
+sig_degs_set <- list(Central=sig_degs$central,
+                  South=sig_degs$south)
+
+venn_palette <- c("dodgerblue","darkblue")
+
+ggvenn(sig_degs_set, columns = c("Central","South"),stroke_size = 0.3,
+       fill_color = venn_palette, stroke_color="white", show_percentage=F,
+       fill_alpha=0.6, set_name_color = "black", text_size=6)
+
+```
+
+
+
+```{r}
+# Create a list of sets
+sig_degs_set <- list(central = sig_degs$central, south = sig_degs$south)
+
+venn.plot <- venn.diagram(
+  x = sig_degs,
+  category.names = c("Central", "South"),
+  filename = NULL,
+  output = TRUE,
+  lwd = 2,
+  col = c("darkblue", "darkblue"),
+  fill = c(alpha("dodgerblue4", 0.5), alpha("blue4", 0.5)),
+  cex = 1.5,
+  fontface = "bold",
+  fontfamily = "sans",
+  cat.cex = 1.5,
+  cat.fontface = "bold",
+  cat.default.pos = "outer",
+  cat.pos = c(-20, 20),
+  cat.dist = c(0.05, 0.05),
+  cat.fontfamily = "sans",
+  scaled = FALSE  # Ensures circles are of equal size
+)
+
+# Draw the Venn diagram
+grid.newpage()
+grid.draw(venn.plot)
+```
 
 
 
@@ -121,87 +167,9 @@ upset(fromList(sig_degs),
 
 
 
-```{r include=FALSE, echo=FALSE}
-# Load necessary libraries
-library(dplyr)
-library(tidyr)
-
-
-# Concatenate multiple annotations per gene, separated by '|'
-processed_annotations <- xtrop %>%
-  group_by(gene_id) %>%
-  summarise(
-    transcript_id = paste(unique(transcript_id), collapse = "|"),
-    peptide_id = paste(unique(peptide_id), collapse = "|"),
-    xenx_pep_id = paste(unique(xenx_pep_id), collapse = "|"),
-    xenx_gene_symbol = paste(unique(xenx_gene_symbol), collapse = "|"),
-    xenx_description = paste(unique(xenx_description), collapse = "|"),
-    xenp_pep_id = paste(unique(xenp_pep_id), collapse = "|"),
-    xenp_gene_symbol = paste(unique(xenp_gene_symbol), collapse = "|"),
-    xenp_description = paste(unique(xenp_description), collapse = "|")
-  )
-
-# Write the processed data back to a file
-write.csv(processed_annotations, "processed_annotations.csv", row.names = FALSE)
-head(processed_annotations)
-```
-
-
-
-```{r include=FALSE, echo=FALSE}
-
-# Function to process annotations
-process_annotations <- function(df, columns_to_process, split_delimiter = ";", concat_delimiter = "|") {
-  df %>%
-    mutate(across(all_of(columns_to_process), ~ {
-      # Split the annotations
-      split_annotations <- str_split(., split_delimiter) 
-      # Unlist and get unique annotations
-      unique_annotations <- unique(unlist(split_annotations))
-      # Concatenate back with the new delimiter
-      paste(unique_annotations, collapse = concat_delimiter)
-    }))
-}
-
-# Define the columns that need to be processed
-columns_to_process <- c("xenx_pep_id", "xenx_gene_symbol", "xenx_description", "xenp_pep_id", "xenp_gene_symbol", "xenp_description")
-
-# Process the annotations
-processed_annotations_2 <- process_annotations(xtrop, columns_to_process)
-
-# Save the processed annotations back to a CSV file (if needed)
-#write.csv(processed_annotations_2, "processed_annotations.csv", row.names = FALSE)
-```
-
-
 ## Volcano plot
 
-Showing the log fold change plotted against the -log10() transformed adjusted p-values per gene. To make small p-values very large, the p-values are usually.
-
-```{r fig.height=12, fig.width=20}
-gg_res <- res %>%
-  lapply(as_tibble,rownames = "gene_id") %>%
-  bind_rows(.id="comparison") %>%
-  drop_na(padj) %>% # drop all genes with NAs
-  filter(padj<0.5) %>% # reduce the number of points that need to be plotted
-  mutate(sig= padj<0.05 & abs(log2FoldChange)>=0) %>% # make a variable to indicate if a gene is significant based on a specific thresholds
-  left_join(processed_annotations_2, by=c("gene_id")) %>% # add annotations
-  ggplot(aes(x=log2FoldChange, y=-log10(padj), color=sig,
-            text=paste0("</br>Pcu23 gene: ", gene_id,
-                        "</br>X.tr peptide: ", xenp_pep_id,
-                       "</br>X.tr description: ", xenp_description
-                       )
-         )) +
-  geom_point(alpha=0.75, shape=16) +
-  facet_wrap(~comparison, ncol = 2, scales = "free") +
-  xlim(-10,10) +
-  theme_minimal() +
-  theme(legend.position = "none")
-
-gg_res
-```
-
-
+Showing the log fold change plotted against the -log10() transformed adjusted p-values per gene. 
 
 ```{r fig.height=5, fig.width=20}
 gg_res <- res %>%
@@ -303,7 +271,6 @@ gg_central
 
 ## South Volcano Plot
 
-
 ```{r}
 south_data <- res$south %>%
   as_tibble(rownames = "gene_id") %>%
@@ -356,29 +323,11 @@ gg_south
 
 
 
-
 ## Getting information about interesting genes
 
-### Thyroid related genes
 
+We filter in the DESeq2 results object those DEGs which are significantly DE.
 
-```{r}
-extract_info_by_keywords <- function(deseq_result, keywords, xtrop) {
-  as_tibble(deseq_result, rownames = "gene_id") %>%
-    left_join(xtrop, by = "gene_id") %>% # Add peptide descriptions
-    filter(if_any(everything(), ~ str_detect(., paste(keywords, collapse = "|")))) %>% # Filter based on keywords in any column
-    arrange(padj)
-}
-
-central_info <- extract_info_by_keywords(res$central, c("thyroid", "duox2"), xtrop)
-south_info <- extract_info_by_keywords(res$south, c("thyroid", "duox2"), xtrop)
-
-```
-
-
-```{r}
-res_par<-readRDS("./results/deseq2_regions_results.rds")
-```
 
 ```{r}
 pull_genes<-function(x, alpha=0.05, lfc=0, signed="both", feature="xenp_gene_symbol") {
@@ -425,6 +374,8 @@ str(degs_ids)
 ```
 
 
+After that, we join the annotations to those DEGs and arrange them by their lowest adjusted p-value to get more infromation on those DEGs.
+
 
 ```{r}
 extract_info <- function(sig_genes, deseq_result, xtrop) {
@@ -442,13 +393,42 @@ extract_info <- function(sig_genes, deseq_result, xtrop) {
   return(detailed_info)
 }
 
+```
+
+
+```{r}
 sig_degs_central <- extract_info(degs_ids$central, res$central, xtrop) %>%
     arrange(padj)
 sig_degs_south <- extract_info(degs_ids$south, res$south, xtrop) %>%
     arrange(padj)
 
-sig_degs_central
+write.csv(sig_degs_central, file = "sig_degs_central.csv")
+write.csv(sig_degs_south, file = "sig_degs_south.csv")
 ```
+
+
+
+
+### Thyroid related genes
+
+
+```{r}
+extract_info_by_keywords <- function(deseq_result, keywords, xtrop) {
+  as_tibble(deseq_result, rownames = "gene_id") %>%
+    left_join(xtrop, by = "gene_id") %>% # Add peptide descriptions
+    filter(if_any(everything(), ~ str_detect(., paste(keywords, collapse = "|")))) %>% # Filter based on keywords in any column
+    arrange(padj)
+}
+
+central_info <- extract_info_by_keywords(res$central, c("thyroid", "duox2"), xtrop)
+south_info <- extract_info_by_keywords(res$south, c("thyroid", "duox2"), xtrop)
+
+```
+
+
+
+
+
 
 
 
@@ -514,8 +494,6 @@ However for the southern region, we do recover some thyroid related genes that h
 Thyroid hormone: We expect genes related to this or its receptor to be more highly expressed in the south. Indeed we find a greater log fold change in the south (1.382 vs. 0.0599),
 and a p value of 0.0078, but due to low mean expression counts, DESeq2 has flagged it as an unreliable estimate. Nonetheless we recover thibz as significantly up regulated as well as DUOX2. This is a direct response gene to TH and involved in organ remodeling during metamorphosis
 
-I CANNOT FIND DUOX2 AS DEG
-
 
 ### Urea cycle related genes
 
@@ -572,9 +550,9 @@ mmp11 is up regulated, which is responsible for TH-induced cell death during met
 
 ```{r}
 
-extract_info_by_keywords(res$central, c("mmp11", "apoptosis", xtrop)
+extract_info_by_keywords(res$central, c("mmp11", "apoptosis"), xtrop)
 
-extract_info_by_keywords(res$south, c("lipid", "leptin", "leprotl1"), xtrop)
+extract_info_by_keywords(res$south, c("mmp11", "apoptosis"), xtrop)
 
 ```
 

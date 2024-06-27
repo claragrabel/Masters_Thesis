@@ -233,6 +233,10 @@ res_ora$result %>%
   filter(p_value<0.05) %>%
   group_by(query) %>%
   dplyr::count(query, sort=TRUE)
+
+res_ora$result %>%
+  filter(p_value<0.05) %>%
+  group_by(query)
 ```
 
 
