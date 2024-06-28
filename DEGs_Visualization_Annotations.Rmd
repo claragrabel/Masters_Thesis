@@ -252,7 +252,7 @@ gg_central
 ```{r}
 
 genes_to_label <- c("mmp11.1", "ass1", "sec14l3", "stard8", "leprotl1", "klf9", "hsp90")
-extra_gene <- "arginase 2 [Source:Xenbase;Acc:XB-GENE-482624]"
+extra_gene <- "PECUL23A051069T1"
 
 
 south_data <- res$south %>%
@@ -301,21 +301,21 @@ gg_south <- south_data %>%
     data = subset(south_data, xenp_gene_symbol %in% genes_to_label),
     aes(label = xenp_gene_symbol),
     size = 3,
-    box.padding = unit(2, "lines"),
-    point.padding = unit(2, "lines"),
+    box.padding = unit(2.3, "lines"),
+    point.padding = unit(2.3, "lines"),
     color = "black",
     segment.color = "black",
-    max.overlaps = 10
+    max.overlaps = 20
   ) +
   geom_text_repel(
-    data = subset(south_data, xenx_description %in% extra_gene),
+    data = subset(south_data, transcript_id %in% extra_gene),
     aes(label = xenp_gene_symbol),
     size = 3,
-    box.padding = unit(2, "lines"),
-    point.padding = unit(2, "lines"),
+    box.padding = unit(3, "lines"),
+    point.padding = unit(3, "lines"),
     color = "black",
     segment.color = "black",
-    max.overlaps = 10
+    max.overlaps = 20
   )
 
 gg_south
