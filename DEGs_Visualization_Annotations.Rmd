@@ -113,37 +113,6 @@ ggvenn(sig_degs_set, columns = c("Central","South"),stroke_size = 0.3,
 
 
 
-```{r}
-# Create a list of sets
-sig_degs_set <- list(central = sig_degs$central, south = sig_degs$south)
-
-venn.plot <- venn.diagram(
-  x = sig_degs,
-  category.names = c("Central", "South"),
-  filename = NULL,
-  output = TRUE,
-  lwd = 2,
-  col = c("darkblue", "darkblue"),
-  fill = c(alpha("dodgerblue4", 0.5), alpha("blue4", 0.5)),
-  cex = 1.5,
-  fontface = "bold",
-  fontfamily = "sans",
-  cat.cex = 1.5,
-  cat.fontface = "bold",
-  cat.default.pos = "outer",
-  cat.pos = c(-20, 20),
-  cat.dist = c(0.05, 0.05),
-  cat.fontfamily = "sans",
-  scaled = FALSE  # Ensures circles are of equal size
-)
-
-# Draw the Venn diagram
-grid.newpage()
-grid.draw(venn.plot)
-```
-
-
-
 ### Upset Plot
 
 
@@ -160,7 +129,7 @@ upset(fromList(sig_degs),
       set_size.show = TRUE,
       set_size.scale_max = max(sapply(sig_degs, length))+200, 
       text.scale = c(1.2, 1.2, 1.2, 1.2, 1.5, 1.5),
-      sets.bar.color = c("skyblue","chartreuse3"),
+      sets.bar.color = c("dodgerblue","darkblue"),
       order.by=c("degree","freq"))
 
 ```
@@ -218,6 +187,8 @@ gg_res
 
 ```{r}
 
+genes_to_label <- c("mcl1", "mmp9.1")
+
 central_data <- res$central %>%
   as_tibble(rownames = "gene_id") %>%
   drop_na(padj) %>% # drop all genes with NAs
@@ -229,7 +200,7 @@ central_data <- res$central %>%
       TRUE ~ "Non-significant"
     )
   ) %>%
-  left_join(processed_annotations_2, by = c("gene_id")) # add annotations
+  left_join(xtrop, by = c("gene_id")) # add annotations
 
 # Calculate the number of upregulated and downregulated genes
 n_upregulated <- sum(central_data$category == "Upregulated")
@@ -259,9 +230,16 @@ gg_central <- central_data %>%
   theme_minimal() +
   theme(
     legend.position = "none",
-    plot.title = element_text(hjust = 0.5) # Center the title
   ) +
-  ggtitle("Volcano Plot for Central Spain Differential Expression Analysis")
+  geom_text_repel(
+    data = subset(central_data, xenp_gene_symbol %in% genes_to_label),
+    aes(label = xenp_gene_symbol),
+    size = 3,
+    box.padding = unit(1.7, "lines"),
+    point.padding = unit(1.7, "lines"),
+    color = "black",
+    segment.color = 'black'
+  )
 
 gg_central
 
@@ -272,6 +250,11 @@ gg_central
 ## South Volcano Plot
 
 ```{r}
+
+genes_to_label <- c("mmp11.1", "ass1", "sec14l3", "stard8", "leprotl1", "klf9", "hsp90")
+extra_gene <- "arginase 2 [Source:Xenbase;Acc:XB-GENE-482624]"
+
+
 south_data <- res$south %>%
   as_tibble(rownames = "gene_id") %>%
   drop_na(padj) %>% # drop all genes with NAs
@@ -313,9 +296,27 @@ gg_south <- south_data %>%
   theme_minimal() +
   theme(
     legend.position = "none",
-    plot.title = element_text(hjust = 0.5) # Center the title
   ) +
-  ggtitle("Volcano Plot for Southern Spain Differential Expression Analysis")
+  geom_text_repel(
+    data = subset(south_data, xenp_gene_symbol %in% genes_to_label),
+    aes(label = xenp_gene_symbol),
+    size = 3,
+    box.padding = unit(2, "lines"),
+    point.padding = unit(2, "lines"),
+    color = "black",
+    segment.color = "black",
+    max.overlaps = 10
+  ) +
+  geom_text_repel(
+    data = subset(south_data, xenx_description %in% extra_gene),
+    aes(label = xenp_gene_symbol),
+    size = 3,
+    box.padding = unit(2, "lines"),
+    point.padding = unit(2, "lines"),
+    color = "black",
+    segment.color = "black",
+    max.overlaps = 10
+  )
 
 gg_south
 

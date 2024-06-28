@@ -250,3 +250,6 @@ vst_pca1$x %>%
 
 
 Warm colours (southern populations) are found on the left side of the plotting area and cold colours (central populations) on the right side. So PC1 is splitting regions quite well. the Y axis (PC3) on the other hand is fairly consistently splitting the triangles from the squares. 
+
+
+
