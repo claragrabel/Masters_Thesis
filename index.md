@@ -13,10 +13,8 @@ subtitle: Welcome to my Master's Thesis project page! Here, I document my journe
 
 ![Workflow](/assets/workflow.png)
 
-1. Experimental Design
-![Experimental Design](/assets/experimental_design.jpg) 
     
-2. Pre-processing
+1. Pre-processing
    
    [Sequence Quality Control](/code_linux/fastqc.md)
 
@@ -24,13 +22,17 @@ subtitle: Welcome to my Master's Thesis project page! Here, I document my journe
    
    [Removing ribosomal RNA with Ribodetector](/code_linux/ribodetector.md)
 
-3. [Quasi-mapping and Quantification with Salmon](/code_linux/Salmon.md)
+2. [Quasi-mapping and Quantification with Salmon](/code_linux/Salmon.md)
    
-5. [Counts Import into R and Gene-level Aggregation](/code_linux/Tximport.md)
+3. [Counts Import into R and Gene-level Aggregation](/code_linux/Tximport.md)
 
-6. [Differential Expression Analysis](/DESeq2.Rmd)
+4. Differential Expression Analysis
+   
+   [Data Exploratory Analysis](/Data_Exploratory_Analysis.Rmd)
 
-7. [Functional Enrichment Analysis](/Enrichment.Rmd)
+   [DESeq2 & Differentially Expressed Genes Visualization](DEGs_Vidualization.Rmd)
+
+6. [Functional Enrichment Analysis](/Functional_Enrichment_Analysis.Rmd)
 
 ### About The Research Group
 Learn more about the research group in the following web [Eco-Evo-Devo Lab](https://www.eco-evo-devo.com).
