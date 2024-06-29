@@ -253,7 +253,15 @@ gostplot(res_ora)
 Custom dot plot using the gprofiler results tables and ggplot.
 
 ```{r fig.height=12, fig.width=10}
-res_ora$result %>%
+
+custom_query_names <- res_ora$result %>%
+  mutate(query = case_when(
+    query == "central" ~ "Non-plastic",
+    query == "south" ~ "Plastic",
+    TRUE ~ query  # Add other conditions if necessary
+  ))
+
+custom_query_names %>%
   select(query,term_name, p_value, intersection_size, query_size,source) %>%
   filter(p_value<0.05) %>%
   mutate(GeneRatio=intersection_size/query_size) %>%

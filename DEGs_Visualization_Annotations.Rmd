@@ -112,7 +112,6 @@ ggvenn(sig_degs_set, columns = c("Central","South"),stroke_size = 0.3,
 ```
 
 
-
 ### Upset Plot
 
 
@@ -403,10 +402,11 @@ sig_degs_central <- extract_info(degs_ids$central, res$central, xtrop) %>%
 sig_degs_south <- extract_info(degs_ids$south, res$south, xtrop) %>%
     arrange(padj)
 
+intersection <- extract_info(intersect(sig_degs_set$Central, sig_degs_set$South), res$south, xtrop)
+
 write.csv(sig_degs_central, file = "sig_degs_central.csv")
 write.csv(sig_degs_south, file = "sig_degs_south.csv")
 ```
-
 
 
 
