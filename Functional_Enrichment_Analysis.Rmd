@@ -273,5 +273,7 @@ custom_query_names %>%
   # scale_color_scico(palette = "bamako", direction = 1) +
   facet_grid(source~query,scales = "free_y",space = "free") +
   theme_bw()
+
+ggsave("functional_enrich.jpeg", width = 10, height = 12, dpi = 320)
 ```
 

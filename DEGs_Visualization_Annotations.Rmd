@@ -242,7 +242,7 @@ gg_central <- central_data %>%
 
 gg_central
 
-
+ggsave("central_volcanoplot.jpeg", width = 8, height = 5 , dpi = 600)
 ```
 
 
@@ -250,8 +250,9 @@ gg_central
 
 ```{r}
 
-genes_to_label <- c("mmp11.1", "ass1", "sec14l3", "stard8", "leprotl1", "klf9", "hsp90")
+genes_to_label <- c("mmp11.1", "ass1", "sec14l3", "stard8", "klf9", "hsp90")
 extra_gene <- "PECUL23A051069T1"
+extra_gene_2 <- "leprotl1"
 
 
 south_data <- res$south %>%
@@ -300,8 +301,8 @@ gg_south <- south_data %>%
     data = subset(south_data, xenp_gene_symbol %in% genes_to_label),
     aes(label = xenp_gene_symbol),
     size = 3,
-    box.padding = unit(2.6, "lines"),
-    point.padding = unit(0.1, "lines"),
+    box.padding = unit(3, "lines"),
+    point.padding = unit(0, "lines"),
     color = "black",
     segment.color = "black",
     max.overlaps = Inf
@@ -310,14 +311,25 @@ gg_south <- south_data %>%
     data = subset(south_data, transcript_id %in% extra_gene),
     aes(label = xenp_gene_symbol),
     size = 3,
-    box.padding = unit(2.5, "lines"),
-    point.padding = unit(0.1, "lines"),
+    box.padding = unit(2.7, "lines"),
+    point.padding = unit(0, "lines"),
+    color = "black",
+    segment.color = "black",
+    max.overlaps = Inf
+  ) +
+  geom_text_repel(
+    data = subset(south_data, xenp_gene_symbol %in% extra_gene_2),
+    aes(label = xenp_gene_symbol),
+    size = 3,
+    box.padding = unit(3, "lines"),
+    point.padding = unit(0, "lines"),
     color = "black",
     segment.color = "black",
     max.overlaps = Inf
   )
 
 gg_south
+ggsave("south_volcanoplot.jpeg", width = 8, height = 5 , dpi = 600)
 
 ```
 
