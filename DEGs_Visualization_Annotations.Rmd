@@ -236,7 +236,7 @@ gg_central <- central_data %>%
     aes(label = xenp_gene_symbol),
     size = 3,
     box.padding = unit(1.7, "lines"),
-    point.padding = unit(1.7, "lines"),
+    point.padding = unit(0.1, "lines"),
     color = "black",
     segment.color = 'black'
   )
@@ -301,21 +301,21 @@ gg_south <- south_data %>%
     data = subset(south_data, xenp_gene_symbol %in% genes_to_label),
     aes(label = xenp_gene_symbol),
     size = 3,
-    box.padding = unit(2.3, "lines"),
-    point.padding = unit(2.3, "lines"),
+    box.padding = unit(2.6, "lines"),
+    point.padding = unit(0.1, "lines"),
     color = "black",
     segment.color = "black",
-    max.overlaps = 20
+    max.overlaps = Inf
   ) +
   geom_text_repel(
     data = subset(south_data, transcript_id %in% extra_gene),
     aes(label = xenp_gene_symbol),
     size = 3,
-    box.padding = unit(3, "lines"),
-    point.padding = unit(3, "lines"),
+    box.padding = unit(2.5, "lines"),
+    point.padding = unit(0.1, "lines"),
     color = "black",
     segment.color = "black",
-    max.overlaps = 20
+    max.overlaps = Inf
   )
 
 gg_south
