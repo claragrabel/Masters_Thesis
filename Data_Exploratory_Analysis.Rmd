@@ -246,6 +246,8 @@ vst_pca1$x %>%
   facet_wrap(~population) +
   theme_minimal()
 
+ggsave("PCA_bet_quality.jpeg", width= 8, height = 5, dpi=600)
+
 ```
 
 
