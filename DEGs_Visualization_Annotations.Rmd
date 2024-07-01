@@ -250,7 +250,7 @@ ggsave("central_volcanoplot.jpeg", width = 8, height = 5 , dpi = 600)
 
 ```{r}
 
-genes_to_label <- c("mmp11.1", "ass1", "sec14l3", "stard8", "klf9", "hsp90")
+genes_to_label <- c("mmp11.1", "ass1", "sec14l3", "stard8", "klf9", "hsp90aa1.1")
 extra_gene <- "PECUL23A051069T1"
 extra_gene_2 <- "leprotl1"
 
