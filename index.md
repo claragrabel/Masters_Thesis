@@ -28,11 +28,12 @@ subtitle: Welcome to my Master's Thesis project page! Here, I document my journe
 
 4. Differential Expression Analysis
    
-   [Data Exploratory Analysis](/Data_Exploratory_Analysis.Rmd)
+   [Data Exploratory Analysis](/R_code_html/Data_Exploratory_Analysis.html)
 
-   [DESeq2 & Differentially Expressed Genes Visualization](DEGs_Vidualization.Rmd)
+   [DESeq2 & Differentially Expressed Genes Visualization](/R_code_html/DEGs_Vidualization.html)
 
-6. [Functional Enrichment Analysis](/Functional_Enrichment_Analysis.Rmd)
+6. [Functional Enrichment Analysis](/R_code_html/Functional_Enrichment_Analysis.html)
+
 
 ### About The Research Group
 Learn more about the research group in the following web [Eco-Evo-Devo Lab](https://www.eco-evo-devo.com).
