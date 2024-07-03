@@ -128,6 +128,25 @@ des.mat
 ```
 
 
+# Make DESeq objects
+
+Our objective is to test whether the effect of dropping water level on tadpoles from plastic and less plastic populations. We therefore want to contrast High vs. Low water for each of the regions and so we have to include a region:treatment interaction effect. However, we are expecting region alone (genetic variations) to be an important factor affecting gene expression and we also want to correct for differences of having sampled different populations within each region.
+
+In the experimental design, populations are treated as replicates per region, being numbered from 1 to 3 within each region. Otherwise, each population would be unique to each region and would return an error.
+
+We also drop the intercept (first term in the formula is 0) to allow for easier comparison between contrasts. If not, the base level expression would be that of the intercept and we would have to re-level the baseline level for each comparison.
+
+
+```{r}
+dds <- DESeqDataSetFromTximport(txi, 
+                                colData = des.mat, 
+                                design = ~0+region + region:pop_n + region:treatment) 
+# making sure metadata is in matching order
+des.mat$sample_id==colnames(assay(dds))
+
+```
+
+
 
 # Pre-filtering
 

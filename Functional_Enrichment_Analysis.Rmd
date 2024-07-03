@@ -23,12 +23,13 @@ To conduct such an analysis, we need:
 * A curated database containing biologically relevant categories, such as GO terms or gene pathways, along with the genes associated with each category. 
 
 
+
 ## Loading necessary libraries
 
 ```{r}
-library(DESeq2)
-library(tidyverse)
-library(gprofiler2)
+
+pacman::p_load(tidyverse, DESeq2, gprofiler2)
+
 ```
 
 
@@ -192,7 +193,7 @@ head(res_ora$result)
 Let's look at the enrichment results in detail
 
 ```{r}
-colnames(test_ora$result)
+colnames(res_ora$result)
 ```
 
 * **query**: This column represents the gene set or query submitted to g:Profiler for enrichment analysis. Each row corresponds to a different gene set or query.
@@ -256,9 +257,9 @@ Custom dot plot using the gprofiler results tables and ggplot.
 
 custom_query_names <- res_ora$result %>%
   mutate(query = case_when(
-    query == "central" ~ "Non-plastic",
+    query == "central" ~ "Less plastic",
     query == "south" ~ "Plastic",
-    TRUE ~ query  # Add other conditions if necessary
+    TRUE ~ query
   ))
 
 custom_query_names %>%
@@ -274,6 +275,6 @@ custom_query_names %>%
   facet_grid(source~query,scales = "free_y",space = "free") +
   theme_bw()
 
-ggsave("functional_enrich.jpeg", width = 10, height = 12, dpi = 320)
+ggsave("functional_enrich.jpeg", width = 8, height = 8.5, dpi = 600)
 ```
 
