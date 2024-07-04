@@ -3,8 +3,8 @@ title: "Data_Exploratory_Analysis"
 author: "clagrabel"
 date: "2024-06-24"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -348,7 +348,9 @@ vst_pca1$x %>%
   scale_fill_manual(values=c("Bui"="#0FBA3D", "Can"="#0FBA93", "Tur"="#0F8CBA",
                               Esp="#900C3F", "Jab"="#FF5733", "Lla"="#FFC300"))+
   facet_wrap(~population, labeller = labeller(population = population_names)) +
-  theme_minimal()
+  theme_minimal() +
+   theme(
+    strip.text = element_text(hjust = 0.6, vjust = 0.5, margin = margin(t = 5, b = 5)))
 
 ggsave("PCA_bet_quality.jpeg", width= 8, height = 5, dpi=600)
 

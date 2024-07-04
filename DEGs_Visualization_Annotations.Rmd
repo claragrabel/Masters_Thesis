@@ -142,50 +142,9 @@ upset(fromList(sig_degs),
 
 
 
-## Volcano plot
+# Volcano plot
 
 Showing the log fold change plotted against the -log10() transformed adjusted p-values per gene. 
-
-```{r fig.height=5, fig.width=20}
-gg_res <- res %>%
-  lapply(as_tibble, rownames = "gene_id") %>%
-  bind_rows(.id = "comparison") %>%
-  drop_na(padj) %>% # drop all genes with NAs
-  filter(padj < 0.5) %>% # reduce the number of points that need to be plotted
-  mutate(
-    category = case_when(
-      padj < 0.05 & log2FoldChange > 0 ~ "Upregulated",
-      padj < 0.05 & log2FoldChange < 0 ~ "Downregulated",
-      TRUE ~ "Non-significant"
-    )
-  ) %>% # categorize points
-  left_join(xtrop, by = c("gene_id")) %>% # add annotations
-  ggplot(aes(
-    x = log2FoldChange, y = -log10(padj), color = category,
-    text = paste0("</br>Pcu23 gene: ", gene_id,
-                  "</br>X.tr peptide: ", xenp_pep_id,
-                  "</br>X.tr description: ", xenp_description)
-  )) +
-  geom_point(alpha = 0.75, shape = 16) +
-  scale_color_manual(values = c(
-    "Non-significant" = "#808080",
-    "Upregulated" = "#FF5733",
-    "Downregulated" = "#0F8CBA"
-  )) +
-  geom_hline(yintercept = -log10(0.05), linetype = "dashed", color = "#808080") +
-  geom_vline(xintercept = 0, linetype = "dashed", color = "#808080") +
-  facet_wrap(~comparison, ncol = 2, scales = "free", 
-             labeller = labeller(comparison = c(
-               "central" = "Central Spain", 
-               "south" = "Southern Spain"
-             ))) +
-  xlim(-10, 10) +
-  theme_minimal() +
-  theme(legend.position = "none") +
-  ggtitle("Volcano Plots for Differential Expression Analysis")
-
-gg_res
-```
 
 
 ## Central Volcano Plot
@@ -572,13 +531,5 @@ extract_info_by_keywords(res$south, c("mmp11", "apoptosis"), xtrop)
 ```{r}
 # we can now turn this into an interactive plot:
 ggplotly(gg_central, tooltip="text")
-```
-
-
-
-#### Interactive Volcano Plots
-
-```{r}
-# we can now turn this into an interactive plot:
 ggplotly(gg_south, tooltip="text")
 ```
