@@ -26,7 +26,7 @@ We will load the libraries needed for this script.
 
 ```{r}
 # use pacman to load libraries
-pacman::p_load(DESeq2, tidyverse, fdrtool, UpSetR, GGally)
+pacman::p_load(DESeq2, tidyverse, GGally)
 ```
 
 
