@@ -30,7 +30,9 @@ subtitle: Welcome to my Master's Thesis project page! Here, I document my journe
    
    [Data Exploratory Analysis](/R_code_html/Data_Exploratory_Analysis.html)
 
-   [DESeq2 & Differentially Expressed Genes Visualization](/DEGs_Visualization_Annotations.Rmd)
+   [DESeq2](/R_code_html/DESeq2.html)
+   
+   [Differentially Expressed Genes Visualization](/R_code_html/DEGs_Visualization_Annotations.html)
 
 6. [Functional Enrichment Analysis](/R_code_html/Functional_Enrichment_Analysis.html)
 
