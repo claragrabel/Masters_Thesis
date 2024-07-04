@@ -292,6 +292,16 @@ sample_id_mapping <- c("Bui1H9_nonrrna" = "Bui1H",
                        "Tur3L3_nonrrna" = "Tur3L",
                        "Tur4H2_nonrrna" = "Tur4H",
                        "Tur4L13_nonrrna" = "Tur4L")
+
+# Create a named vector for population full names
+population_names <- c(
+  "Bui" = "Buitrago",
+  "Can" = "Canencia",
+  "Tur" = "Turrubuelo",
+  "Esp" = "Espajosas",
+  "Jab" = "Jabata",
+  "Lla" = "Llano"
+)
 ```
 
 ```{r}
@@ -337,7 +347,7 @@ vst_pca1$x %>%
                               Esp="#900C3F", "Jab"="#FF5733", "Lla"="#FFC300"))+
   scale_fill_manual(values=c("Bui"="#0FBA3D", "Can"="#0FBA93", "Tur"="#0F8CBA",
                               Esp="#900C3F", "Jab"="#FF5733", "Lla"="#FFC300"))+
-  facet_wrap(~population) +
+  facet_wrap(~population, labeller = labeller(population = population_names)) +
   theme_minimal()
 
 ggsave("PCA_bet_quality.jpeg", width= 8, height = 5, dpi=600)
