@@ -2,7 +2,9 @@
 title: "Data_Exploratory_Analysis"
 author: "clagrabel"
 date: "2024-06-24"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -119,7 +121,7 @@ txi$abundance<-txi$abundance[,as.character(des.mat$sample_id)]
 txi$counts<-txi$counts[,as.character(des.mat$sample_id)]
 txi$length<-txi$length[,as.character(des.mat$sample_id)]
 
-## get column order of counts matrix and re-order des.mat to match
+# get column order of counts matrix and re-order des.mat to match
 col_order<-match(colnames(txi$counts),des.mat$sample_id)
 des.mat<-des.mat[col_order,]
 des.mat$sample_id==colnames(txi$counts)

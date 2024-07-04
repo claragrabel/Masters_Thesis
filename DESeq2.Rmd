@@ -1,0 +1,290 @@
+---
+title: "DESeq2"
+author: "claragrabel"
+date: "2024-07-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+# use pacman to load libraries
+pacman::p_load(DESeq2, tidyverse)
+```
+
+
+## Making DESeq objects
+
+We already created the DESeq object in the previous script with the following code.
+
+Our objective is to test whether the effect of dropping water level on tadpoles from plastic and less plastic populations. We therefore want to contrast High vs. Low water for each of the regions and so we have to include a region:treatment interaction effect. However, we are expecting region alone (genetic variations) to be an important factor affecting gene expression and we also want to correct for differences of having sampled different populations within each region.
+
+In the experimental design, populations are treated as replicates per region, being numbered from 1 to 3 within each region. Otherwise, each population would be unique to each region and would return an error.
+
+We also drop the intercept (first term in the formula is 0) to allow for easier comparison between contrasts. If not, the base level expression would be that of the intercept and we would have to re-level the baseline level for each comparison.
+
+
+
+```{r}
+# load data
+
+txi<-readRDS("salmon_gene_counts.rds")
+
+# Remove mtDNA, non-coding and nr baits
+
+# make a list of genes we want to keep
+whitelist<-txi$counts %>%
+  as_tibble(rownames = "gene_id") %>%
+  filter(!str_detect(gene_id, pattern = "mt|nr|nc")) %>%
+  pull(gene_id)
+
+length(whitelist);head(whitelist) # we are keeping 32531 genes
+
+# filter txi tables
+txi$abundance<-txi$abundance[whitelist,]
+txi$counts<-txi$counts[whitelist,]
+txi$length<-txi$length[whitelist,]
+
+# load design matrix
+
+des.mat<-read_csv("./design_matrix.csv")
+
+# Re-order factor levels
+des.mat <- des.mat %>%
+  mutate(population=factor(population, levels=c("Bui","Can","Tur","Esp","Jab","Lla"))) %>% # re-order factors for easy plotting later
+  mutate(pop_n = factor(rep(rep(1:3,each=8),2))) %>% # The new variable pop_n created in the code does not depend on the levels of the population factor and is created independently by repeating a sequence. Hence, pop_n is non-nested with respect to population. 
+  mutate_if(is.character, as.factor) # convert characters to factor
+
+# filter out samples
+
+des.mat<-des.mat %>%
+  filter(!sample_id %in% c("Bui4H14_nonrrna","Jab5H6_nonrrna")) 
+
+# filter txi tables
+txi$abundance<-txi$abundance[,as.character(des.mat$sample_id)]
+txi$counts<-txi$counts[,as.character(des.mat$sample_id)]
+txi$length<-txi$length[,as.character(des.mat$sample_id)]
+
+# get column order of counts matrix and re-order des.mat to match
+col_order<-match(colnames(txi$counts),des.mat$sample_id)
+des.mat<-des.mat[col_order,]
+des.mat$sample_id==colnames(txi$counts)
+
+des.mat
+```
+
+
+
+```{r}
+# dds Object
+
+dds <- DESeqDataSetFromTximport(txi, 
+                                colData = des.mat, 
+                                design = ~0+region + region:pop_n + region:treatment)
+
+# Making sure metadata is in matching order
+des.mat$sample_id==colnames(assay(dds))
+
+```
+
+
+And applied a mild pre-filtering step:
+
+```{r}
+dds1<-dds[rowSums(counts(dds) >= 1) >= 12,] # genes that have at least 1 count for 12 samples (e.g. one per treatment per population)
+dim(dds1)
+```
+
+# DESeq for Differential Gene Expression
+
+We will now use the DESeq function to run the DESeq2 pipeline. This pipeline consists of the following steps:
+
+* Estimate Size Factors:
+
+Use the estimateSizeFactors function to calculate normalization factors for each sample. This accounts for differences in sequencing depth and RNA composition. 
+
+* Estimate Dispersion:
+
+Estimate the dispersion parameter for each gene. The dispersion reflects the variance of counts for a gene beyond what is expected under a Poisson model.
+The dispersions are fitted to improve accuracy, especially for lowly expressed genes.
+
+* Fit the Negative Binomial GLM:
+
+Fit a negative binomial generalized linear model (GLM). Either using Wald Test (default) or Likelihood Ratio Test.
+
+* Independent Filtering:
+
+Apply independent filtering to remove genes with low mean counts that are unlikely to be significant. This increases the power of the tests by reducing the number of tests performed.
+
+* Multiple Testing Correction:
+
+Use the Benjamini-Hochberg procedure or other methods to adjust p-values for multiple testing. This controls the FDR, ensuring that the proportion of false positives among the declared significant results is low.
+
+* Results Extraction:
+
+Use the results function to extract the differential expression results, including log2 fold changes, p-values, and adjusted p-values.
+
+
+```{r}
+dds1 <- DESeq(dds1)
+```
+
+
+
+## Comparing Low vs High water level treatment for each of the two regions
+
+```{r}
+resultsNames(dds1) 
+
+# Comparing Low vs High (high is the reference level for treatment) in the central region
+res_treat_central<-results(dds1, name="regioncentral.treatmentL")  
+summary(res_treat_central, alpha=0.05)
+
+# Comparing Low vs High (high is the reference level for treatment) in the southern region
+res_treat_south<-results(dds1, name="regionsouth.treatmentL")  
+summary(res_treat_south, alpha=0.05)
+
+# Combining them into a list
+
+res_dds<-list("central"=res_treat_central,
+              "south"=res_treat_south)
+
+```
+
+
+We can plot the number of DEGs.
+
+
+```{r}
+# plot
+res_dds %>%
+  lapply(as_tibble,rownames = "gene_id") %>%
+  bind_rows(.id="population") %>%
+  drop_na(padj) %>% # drop all genes with NAs
+  filter(padj<0.1) %>%
+  mutate(updown=ifelse(log2FoldChange>0, "up", "down")) %>%
+  group_by(population, updown) %>%
+  summarise(n=n()) %>%
+  mutate(n=ifelse(updown=="down", n*-1, n)) %>%
+  ggplot(aes(x=population, y=n, fill=updown)) +
+  geom_bar(stat="identity") +
+  theme_bw() +
+  theme(legend.position = "none")
+```
+
+
+
+## Diagnostics
+
+Let's look at the p-value distributions
+
+```{r}
+par(mfrow=c(2,1))
+for(i in 1:length(res_dds)){
+  hist(res_dds[[i]]$pvalue, breaks=40, col="grey", main=names(res_dds)[i])
+}
+par(mfrow=c(1,1))
+```
+
+The distribution should be evenly distributed with an inflation of p-values=0. Common "bad" distributions include U-shaped or hill shaped. Therefore, our distribution looks relatively normal.
+
+
+## Local dispersion fits
+
+We try using a local fit instead of a parametric fit (default) for the dispersion. DESeq dispersion quantifies the within-group variability of gene expression. We will plot the dispersion estimates for both the parametric and local fits to visually inspect the differences, and calculate the median of the absolute residuals (difference between observed and fitted dispersions) for both fits to quantitatively compare the fits. Lower residuals indicate a better fit.
+
+```{r}
+# Visually inspect the dispersion of a (default) parametric fit vs a local fit
+
+disp.par <- estimateDispersions(dds1, fitType = "parametric")
+disp.loc <- estimateDispersions(dds1, fitType = "local")
+par(mfrow=c(2,1))
+plotDispEsts(disp.par, main= "dispEst: parametric")
+plotDispEsts(disp.loc, main= "dispEst: local")
+par(mfrow=c(1,1))
+
+
+# Calculate median of absolute residuals
+
+median(abs(log(mcols(disp.par)$dispGeneEst) - log(mcols(disp.par)$dispFit)))
+median(abs(log(mcols(disp.loc)$dispGeneEst) - log(mcols(disp.loc)$dispFit)))
+
+# Local fit presents lower mean absolute residuals, suggesting that that the distance of the residuals to the best fit line is lower.
+
+```
+
+
+We calculate the new results using local fit type
+
+```{r}
+
+dds.loc<-DESeq(dds1, fitType = "local")
+resultsNames(dds.loc)
+
+# compares Low vs High (high is the reference level for treatment) in the central region
+res_loc_treat_central<-results(dds.loc, name="regioncentral.treatmentL")  
+summary(res_loc_treat_central, alpha=0.05)
+
+# compares Low vs High (high is the reference level for treatment) in the central region
+res_loc_treat_south<-results(dds.loc, name="regionsouth.treatmentL")  
+summary(res_loc_treat_south, alpha=0.05)
+
+# Combining them into a list
+
+res_dds_loc<-list("central"=res_loc_treat_central,
+              "south"=res_loc_treat_south)
+
+par(mfrow=c(2,1))
+for(i in 1:length(res_dds_loc)){
+  hist(res_dds_loc[[i]]$pvalue, breaks=40, col="grey", main=names(res_dds_loc)[i])
+}
+par(mfrow=c(1,1))
+```
+
+
+
+```{r}
+# plot
+res_dds_loc %>%
+  lapply(as_tibble,rownames = "gene_id") %>%
+  bind_rows(.id="population") %>%
+  drop_na(padj) %>% # drop all genes with NAs
+  filter(padj<0.1) %>%
+  mutate(updown=ifelse(log2FoldChange>0, "up", "down")) %>%
+  group_by(population, updown) %>%
+  summarise(n=n()) %>%
+  mutate(n=ifelse(updown=="down", n*-1, n)) %>%
+  ggplot(aes(x=population, y=n, fill=updown)) +
+  geom_bar(stat="identity") +
+  theme_bw() +
+  theme(legend.position = "none")
+```
+
+
+
+## Export data
+
+Lets export the results with the default null distribution and only light pre-filtering
+
+```{r}
+# Make a results folder if it does not yet exist
+dir.create("results", showWarnings = FALSE)
+
+# Save DESeq2 object
+saveRDS(dds1, "./results/deseq2_regions_dds.rds")
+
+saveRDS(dds.loc, "./results/deseq2_regions_local.rds")
+
+# Save results object
+saveRDS(res_dds,
+        "./results/deseq2_regions_results.rds")
+
+saveRDS(res_dds,
+        "./results/deseq2_regions_results_local.rds")
+
+```
+
+
