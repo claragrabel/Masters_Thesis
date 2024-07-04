@@ -16,7 +16,7 @@ mamba activate env_salmon
 ### Installing salmon
 
 ```bash
-conda install -c bioconda salmon
+mamba install -c bioconda salmon
 ```
 
 ## Indexing the Reference Genome and Transcriptome
