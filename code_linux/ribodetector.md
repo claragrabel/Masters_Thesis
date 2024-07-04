@@ -8,7 +8,7 @@ Ribodetector has several modes. It can be run on GPU or CPU. We chose the CPU mo
 
 ```bash
 %requires pytorch 
-conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
+mamba install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
 ```
 
 ```bash
