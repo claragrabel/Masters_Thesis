@@ -235,6 +235,79 @@ Same PCA but colouring treatments instead of regions. It is not until susequent 
 
 Plot specific axes again to highlight some of this more clearly.
 
+First, we will simplify the names of the samples:
+
+```{r}
+vst_pca1$x %>%
+  as_tibble(rownames = "sample_id")
+```
+
+
+
+```{r}
+# mapping of old sample IDs to new sample IDs
+sample_id_mapping <- c("Bui1H9_nonrrna" = "Bui1H",
+                       "Bui1L9_nonrrna" = "Bui1L",
+                       "Bui2H12_nonrrna" = "Bui2H",
+                       "Bui2L1_nonrrna" = "Bui2L",
+                       "Bui3H10_nonrrna" = "Bui3H",
+                       "Bui3L8_nonrrna" = "Bui3L",
+                       "Bui4L4_nonrrna" = "Bui4L",
+                       "Can1H4_nonrrna" = "Can1H",
+                       "Can1L1_nonrrna" = "Can1L",
+                       "Can2H12_nonrrna" = "Can2H",
+                       "Can2Lextra_nonrrna" = "Can2L",
+                       "Can3H8_nonrrna" = "Can3H",
+                       "Can3L6_nonrrna" = "Can3L",
+                       "Can4Hextra_nonrrna" = "Can4H",
+                       "Can4L7_nonrrna" = "Can4L",
+                       "Esp1H7_nonrrna" = "Esp1H",
+                       "Esp1L7_nonrrna" = "Esp1L",
+                       "Esp2H2_nonrrna" = "Esp2H",
+                       "Esp2L3_nonrrna" = "Esp2L",
+                       "Esp4H1_nonrrna" = "Esp3H",
+                       "Esp4L1_nonrrna" = "Esp3L",
+                       "Esp5H5_nonrrna" = "Esp4H",
+                       "Esp5L2_nonrrna" = "Esp4L",
+                       "Jab1H6_nonrrna" = "Jab1H",
+                       "Jab1L2_nonrrna" = "Jab1L",
+                       "Jab2H5_nonrrna" = "Jab2H",
+                       "Jab2L3_nonrrna" = "Jab2L",
+                       "Jab4H6_nonrrna" = "Jab3H",
+                       "Jab4L5_nonrrna" = "Jab3L",
+                       "Jab5L4_nonrrna" = "Jab4L",
+                       "Lla1H4_nonrrna" = "Lla1H",
+                       "Lla1L7_nonrrna" = "Lla1L",
+                       "Lla2H3_nonrrna" = "Lla2H",
+                       "Lla2L4_nonrrna" = "Lla2L",
+                       "Lla4H5_nonrrna" = "Lla3H",
+                       "Lla4L6_nonrrna" = "Lla3L",
+                       "Lla5H7_nonrrna" = "Lla4H",
+                       "Lla5L3_nonrrna" = "Lla4L",
+                       "Tur1H12_nonrrna" = "Tur1H",
+                       "Tur1L12_nonrrna" = "Tur1L",
+                       "Tur2H6_nonrrna" = "Tur2H",
+                       "Tur2L6_nonrrna" = "Tur2L",
+                       "Tur3H6_nonrrna" = "Tur3H",
+                       "Tur3L3_nonrrna" = "Tur3L",
+                       "Tur4H2_nonrrna" = "Tur4H",
+                       "Tur4L13_nonrrna" = "Tur4L")
+```
+
+```{r}
+# Modify the sample IDs in vst_pca1$x
+vst_pca1$x <- vst_pca1$x %>% 
+  as_tibble(rownames = "sample_id") %>%
+  mutate(sample_id = recode(sample_id, !!!sample_id_mapping)) %>%
+  column_to_rownames(var = "sample_id")
+
+# Modify the sample IDs in des.mat
+des.mat <- des.mat %>%
+  mutate(sample_id = recode(sample_id, !!!sample_id_mapping))
+```
+
+
+
 ```{r}
 
 # calculate hulls
