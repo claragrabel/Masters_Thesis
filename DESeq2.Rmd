@@ -282,7 +282,7 @@ saveRDS(dds.loc, "./results/deseq2_regions_local.rds")
 saveRDS(res_dds,
         "./results/deseq2_regions_results.rds")
 
-saveRDS(res_dds,
+saveRDS(res_dds_loc,
         "./results/deseq2_regions_results_local.rds")
 
 ```

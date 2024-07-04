@@ -24,9 +24,6 @@ pacman::p_load(tidyverse, DESeq2, ggVennDiagram, UpSetR, plotly, ggrepel, scico,
 ## Loading the data
 
 ```{r}
-# DEG object
-dds1 <- readRDS("./results/deseq2_regions_dds.rds")
-
 
 # The list of DEG results
 res<-readRDS("./results/deseq2_regions_results_local.rds")
