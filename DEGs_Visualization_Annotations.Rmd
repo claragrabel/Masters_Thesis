@@ -511,9 +511,6 @@ However for the southern region, we do recover some thyroid related genes that h
 (the next gene is already over padj 0.05: trip4,	thyroid hormone receptor interactor 4 [Source:Xenbase;Acc:XB-GENE-974186]; padj=0.066677105)
 
 
-Thyroid hormone: We expect genes related to this or its receptor to be more highly expressed in the south. Indeed we find a greater log fold change in the south (1.382 vs. 0.0599),
-and a p value of 0.0078, but due to low mean expression counts, DESeq2 has flagged it as an unreliable estimate. Nonetheless we recover thibz as significantly up regulated as well as DUOX2. This is a direct response gene to TH and involved in organ remodeling during metamorphosis
-
 
 ### Urea cycle related genes
 
@@ -527,8 +524,6 @@ No significant DEGs in central.
 South:
 * ass1, argininosuccinate synthase 1 [Source:Xenbase;Acc:XB-GENE-977784], padj=0.003197872
 * arg2, arginase 2 [Source:Xenbase;Acc:XB-GENE-482624], padj=0.003584074
-
-Urea cycle: arg2 and ass1 are over expressed in the south, both are involved in urea syntheis. This is something that happens during metamorphosis in amphibians.
 
 
 ### CORT related genes
@@ -546,12 +541,9 @@ South:
 * hsp90aa1.1 heat shock protein 90kDa alpha family class A member 1 [Source:Xenbase;Acc:XB-GENE-49530...] padj=0.005406117
 * klf9 Kruppel-like factor 9 [Source:Xenbase;Acc:XB-GENE-483889]; padj=0.034931505
 
-CORT: we expect higher levels of corticosterone, which affects many downstream genes such as: klf9, hsp90
-
 
 ### Leptin/lipid metabolism related genes
 
-We expect accelerated larvae to be metabolising fats more readily. accordingly, we see DEGs such as leprotl1
 
 ```{r}
 
@@ -562,10 +554,7 @@ extract_info_by_keywords(res$south, c("lipid", "leptin", "leprotl1"), xtrop)
 ```
 
 
-
 ### Apoptosis
-
-mmp11 is up regulated, which is responsible for TH-induced cell death during metamorphosis
 
 
 ```{r}
