@@ -213,7 +213,7 @@ ggsave("central_volcanoplot.jpeg", width = 7, height = 5 , dpi = 600)
 
 ```{r}
 
-genes_to_label <- c("mmp11.1", "ass1", "sec14l3", "stard8", "klf9", "hsp90aa1.1")
+genes_to_label <- c("thibz", "mmp11", "ass1", "sec14l3", "stard8", "klf9", "hsp90aa1.1")
 extra_gene <- "PECUL23A051069T1"
 extra_gene_2 <- "leprotl1"
 
@@ -274,7 +274,7 @@ gg_south <- south_data %>%
     data = subset(south_data, transcript_id %in% extra_gene),
     aes(label = xenp_gene_symbol),
     size = 3,
-    box.padding = unit(2.7, "lines"),
+    box.padding = unit(2, "lines"),
     point.padding = unit(0, "lines"),
     color = "black",
     segment.color = "black",
@@ -293,6 +293,7 @@ gg_south <- south_data %>%
 
 gg_south
 ggsave("south_volcanoplot.jpeg", width = 7, height = 5 , dpi = 600)
+
 
 ```
 
@@ -460,13 +461,6 @@ In the central region, there are no terms associated with the thyroid hormone th
 south_info
 ```
 
-However for the southern region, we do recover some thyroid related genes that have lower adjusted p-value than 0.05.
-
-* thibz, thyroid hormone induced bZip protein [Source:Xenbase;Acc:XB-GENE-484679]; padj=0.001235922
-
-(the next gene is already over padj 0.05: trip4,	thyroid hormone receptor interactor 4 [Source:Xenbase;Acc:XB-GENE-974186]; padj=0.066677105)
-
-
 
 ### Urea cycle related genes
 
@@ -475,11 +469,6 @@ extract_info_by_keywords(res$central, c("urea", "ass1", "arg2"), xtrop)
 
 extract_info_by_keywords(res$south, c("urea", "ass1", "arg2"), xtrop)
 ```
-No significant DEGs in central.
-
-South:
-* ass1, argininosuccinate synthase 1 [Source:Xenbase;Acc:XB-GENE-977784], padj=0.003197872
-* arg2, arginase 2 [Source:Xenbase;Acc:XB-GENE-482624], padj=0.003584074
 
 
 ### CORT related genes
@@ -490,12 +479,6 @@ extract_info_by_keywords(res$central, c("CORT", "corticosterone", "hsp90", "klf9
 
 extract_info_by_keywords(res$south, c("CORT", "corticosterone", "hsp90", "klf9"), xtrop)
 ```
-
-No significant DEGs in the central region.
-
-South:
-* hsp90aa1.1 heat shock protein 90kDa alpha family class A member 1 [Source:Xenbase;Acc:XB-GENE-49530...] padj=0.005406117
-* klf9 Kruppel-like factor 9 [Source:Xenbase;Acc:XB-GENE-483889]; padj=0.034931505
 
 
 ### Leptin/lipid metabolism related genes
