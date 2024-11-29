@@ -60,7 +60,7 @@ cat file
 # view compressed file
 zcat <file>
 
-# visualize only the first lines of a compressed ile:
+# visualize only the first lines of a compressed file:
 zcat <file> | head
 
 # visualize lines with a concrete word or symbol
