@@ -108,10 +108,13 @@ cp <old_file> <new_file>
 cp -r <old_directory> <new_directory>
 
 # copy parts of a file (e.g. using head function)
-cat <file_to_copy> | head -n 1000 > <path>/<name_of_new_file>
+head -n 1000 <file_to_copy> > <path>/<name_of_new_file>
+    # copying the first 100 lines of a file into a new file. e.g.
+head -n 1000 log > /path/to/directory/first_1000_lines.log    
 
 # make a symbolic link
 ln -s <old_file> <new_file>
+    # ln stands for "link" and "-s" stands for symbolic
 
 # move a file
 mv <file> <new_folder>
@@ -123,6 +126,12 @@ rm <file>
 rm -r <folder>
 
 ``` 
+
+Symbolic links and hard links:
+* symbolic links point to the name or path of the original file, not to the file's data (inode) directly. If the original file is deleted or moved, the symbolic link becomes broken, since it depends on the file's location and path. On the same note, symlinks can link to directories (e.g., shortcuts). Best for creating shortcuts or links across different locations.
+* hard links (without -s) are additional directory entries for the same inode (physical data) as the original file, points to the same data. Uses minimal space (only new directory entry) since it is not a copy. Changes in the original data or in any of the hard links affect all hard links, they are not really independent like a copy.
+The file data remains accessible as long as there is a hard link, even if the original file is deleted. Best for creating additional names for the same file within the same file system.
+
 
 ## Installing packages
 
@@ -185,7 +194,7 @@ Since the Server does not have a SLURM Queueing System, we should be aware of th
 Therefore, it is a good practice to check the server, the amount of threads that are being used by the running processes and how many people are using it.
 
 ```bash
-# monitoring current running processes, checking the available threads of the server and the threads being used
+# monitoring current running processes, checking the available threads of the server and the threads being used. Real-time, dynamic view of system processes.
     # -u –user=USERNAME Used to show only the processes of a given user
 htop
 top
@@ -227,24 +236,38 @@ screen -r session_name
 ```
 
 
-If the process is short and we wanted to run the process in the process in the background:
+If the process is short and we wanted to run the process in the background:
 
 ```bash
 
 # run a command in the background in the first place
 command_name &
 
-# suspend a process in the foreground
-    # Ctrl+z
+# combine with nohup or disown to keep processes running even after the terminal is closed:
+nohup command_name &
 
 # list running, suspended and background jobs
 jobs
+    # used to find job IDs
+jobs -l 
+    # adds the PID of each job to the output of jobs.
 
-# resuming execution of a suspended process in the background, as if they had been started with &
-bg job_number
+# snapshot (static) list processes at the moment the command is run
+ps
+
+# suspend a process in the background
+kill -STOP 12345  # Suspend process with PID 12345
 
 # bring a background process to the foreground
-fg job_number
+fg %job_id
+fg process_id
+
+# suspend a process in the foreground
+    # Ctrl+z
+
+# resuming execution of a suspended process in the background, as if they had been started with &
+bg %job_id
+bg process_id
 
 ```
 
