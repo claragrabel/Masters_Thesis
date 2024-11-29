@@ -32,7 +32,7 @@ cd
 # go to previous directory
 ..
 
-# short-cuts for going back to my home directory:
+# short-cuts for going back to my home directory
 cd ~/
 cd $HOME
 
