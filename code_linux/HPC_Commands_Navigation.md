@@ -129,7 +129,7 @@ rm -r <folder>
 
 Symbolic links and hard links:
 * symbolic links point to the name or path of the original file, not to the file's data (inode) directly. If the original file is deleted or moved, the symbolic link becomes broken, since it depends on the file's location and path. On the same note, symlinks can link to directories (e.g., shortcuts). Best for creating shortcuts or links across different locations.
-* hard links (without -s) are additional directory entries for the same inode (physical data) as the original file, points to the same data. Uses minimal space (only new directory entry) since it is not a copy. Changes in the original data or in any of the hard links affect all hard links, they are not really independent like a copy.
+* hard links (without -s) are additional directory entries for the same inode (physical data) as the original file, point to the same data. Uses minimal space (only new directory entry) since it is not a copy. Changes in the original data or in any of the hard links affect all hard links, they are not really independent like a copy.
 The file data remains accessible as long as there is a hard link, even if the original file is deleted. Best for creating additional names for the same file within the same file system.
 
 
