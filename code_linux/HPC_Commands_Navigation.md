@@ -233,6 +233,13 @@ screen -r session_name
 
 # exiting a screen session
     # type exit or press Ctrl-d until all shells in the session are closed
+
+# delete a screen when detached
+screen -S session_name_or_id -X quit
+
+# terminate all screen sessions
+pkill screen
+
 ```
 
 
