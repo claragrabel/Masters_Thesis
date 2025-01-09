@@ -185,6 +185,9 @@ mamba env list
 # deactivating the environment
 mamba deactivate
 
+# removing an environment
+mamba env remove -n env_name
+
 ```
 
 
