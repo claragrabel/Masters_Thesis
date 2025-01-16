@@ -125,6 +125,10 @@ rm <file>
 # remove a folder and its content
 rm -r <folder>
 
+# scp from the local machione to a remote server and vice versa. This command is run on the local machine
+scp source/absolute/path/file user@server:destination/absolute/path/file    # from local to remote
+scp user@server:source/absolute/path/file destination/absolute/path/file    #from remote to local
+scp -r source/absolute/path/file user@server:destination/absolute/path/file    # to copy a directory
 ``` 
 
 Symbolic links and hard links:
