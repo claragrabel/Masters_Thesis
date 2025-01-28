@@ -270,6 +270,11 @@ jobs -l
 
 # snapshot (static) list processes at the moment the command is run
 ps
+# ps stands for (process status)
+# if we want to know the status of a specific process
+ps -p PID
+# if we want to know the full-format listing of the process (user, start time, parent process ID):
+ps -fp PID
 
 # suspend a process in the background
 kill -STOP 12345  # Suspend process with PID 12345
