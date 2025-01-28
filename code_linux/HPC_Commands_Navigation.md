@@ -96,6 +96,8 @@ source ~/.bashr
     # du stands for disk usage
 du -h _filename_or_path/to/directory
 
+# see server specifications, cores and threads
+lscpu
 ```
 
 ## Copying, moving and removing files and making alias
