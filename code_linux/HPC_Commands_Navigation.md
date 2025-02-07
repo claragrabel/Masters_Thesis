@@ -133,7 +133,16 @@ scp user@server:source/absolute/path/file destination/absolute/path/file    # fr
 scp -r source/absolute/path/file user@server:destination/absolute/path/file    # to copy a directory
 
 # rsync (remote sync): sync files between remote and local servers. This command is run on the local machine.
-# rsync allows for 
+rsync -avz --progress /local/largefile user@remote:/remote/path/
+# -a  : Archive mode (preserves permissions, timestamps, symbolic links, etc.).
+# -v  : Verbose output (shows transfer details).
+# -z  : Compresses data during transfer (useful for slow connections).
+# --progress: show the progress of the transfer
+# --partial: Keeps incomplete files after interruption and resumes from where it stopped.  
+# --append: Adds new data to an incomplete file without verifying existing data.  
+# --append-verify: Verifies existing data before appending new data, useful for large files.
+
+# to resume the transfer, execute the same command but adding the partial parameter
 
 ```
 
@@ -141,28 +150,11 @@ Rsync:
 
 One of the features of rsync is its ability to resume file transfers from where they were interrupted. This is especially useful for large file transfers that may take hours or when network connections are unstable.
 
-The --partial option is key to resuming incomplete transfers. By default, rsync may delete partially transferred files when a transfer is interrupted. The --partial option tells rsync to keep these partial files so it can resume the transfer in a subsequent attempt.
+--partial: if the transfer is interrupted, the next time we run the same command, rsync will compare the partially transferred file on the remote machine with the source file and resume from the point where the transfer stopped. By default (without partial), rsync may delete partially transferred files when a transfer is interrupted.
 
-```bash
-rsync -avz --progress --partial /local/largefile user@remote:/remote/path/
-```
-
-With --partial, if the transfer is interrupted, the next time you run the same command, rsync will compare the partially transferred file on the remote machine with the source file and resume from the point where the transfer stopped.
-
-To resume the transfer
-
-rsync -avz --progress --partial  /root/a.bin \
-root@192.168.0.18:/root/test2.bin
-After the transfer we can verify checking the cksum of the transfered file to the original file on the source machine .
-
-$ cksum test2.bin
-3754642205 1073741824 test2.bin
 Append and Verification of Transfer
--append and -append-verify Options
-If you’re confident that the data already transferred is intact, you can use the --append option to resume the transfer by appending the new data to the partially transferred file. This option is particularly useful for large, sequential files where the transferred portion remains unchanged.
-
-rsync -avz --partial --append /local/largefile user@remote:/remote/path/
-The --append-verify option offers additional data integrity by ensuring the already transferred portion is correct before appending the new data:
+--append: if we are confident that the data already transferred is intact, to resume the transfer by appending the new data to the partially transferred file
+--append-verify: useful for large, sequential files where the transferred portion remains unchanged. ensuring the already transferred portion is correct before appending the new data:
 
 
 Symbolic links and hard links:
