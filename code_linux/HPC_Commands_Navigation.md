@@ -127,11 +127,43 @@ rm <file>
 # remove a folder and its content
 rm -r <folder>
 
-# scp from the local machine to a remote server and vice versa. This command is run on the local machine
+# scp (secure copy protocol) copy files from the local machine to a remote server and vice versa. This command is run on the local machine
 scp source/absolute/path/file user@server:destination/absolute/path/file    # from local to remote
 scp user@server:source/absolute/path/file destination/absolute/path/file    # from remote to local
 scp -r source/absolute/path/file user@server:destination/absolute/path/file    # to copy a directory
-``` 
+
+# rsync (remote sync): sync files between remote and local servers. This command is run on the local machine.
+# rsync allows for 
+
+```
+
+Rsync:
+
+One of the features of rsync is its ability to resume file transfers from where they were interrupted. This is especially useful for large file transfers that may take hours or when network connections are unstable.
+
+The --partial option is key to resuming incomplete transfers. By default, rsync may delete partially transferred files when a transfer is interrupted. The --partial option tells rsync to keep these partial files so it can resume the transfer in a subsequent attempt.
+
+```bash
+rsync -avz --progress --partial /local/largefile user@remote:/remote/path/
+```
+
+With --partial, if the transfer is interrupted, the next time you run the same command, rsync will compare the partially transferred file on the remote machine with the source file and resume from the point where the transfer stopped.
+
+To resume the transfer
+
+rsync -avz --progress --partial  /root/a.bin \
+root@192.168.0.18:/root/test2.bin
+After the transfer we can verify checking the cksum of the transfered file to the original file on the source machine .
+
+$ cksum test2.bin
+3754642205 1073741824 test2.bin
+Append and Verification of Transfer
+-append and -append-verify Options
+If you’re confident that the data already transferred is intact, you can use the --append option to resume the transfer by appending the new data to the partially transferred file. This option is particularly useful for large, sequential files where the transferred portion remains unchanged.
+
+rsync -avz --partial --append /local/largefile user@remote:/remote/path/
+The --append-verify option offers additional data integrity by ensuring the already transferred portion is correct before appending the new data:
+
 
 Symbolic links and hard links:
 * symbolic links point to the name or path of the original file, not to the file's data (inode) directly. If the original file is deleted or moved, the symbolic link becomes broken, since it depends on the file's location and path. On the same note, symlinks can link to directories (e.g., shortcuts). Best for creating shortcuts or links across different locations.
