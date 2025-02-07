@@ -132,7 +132,7 @@ scp source/absolute/path/file user@server:destination/absolute/path/file    # fr
 scp user@server:source/absolute/path/file destination/absolute/path/file    # from remote to local
 scp -r source/absolute/path/file user@server:destination/absolute/path/file    # to copy a directory
 
-# rsync (remote sync): sync files between remote and local servers. This command is run on the local machine.
+# rsync (remote sync): sync files between remote and local servers and allows for transfer resuming if the process is interrumped. Useful for large files or large amount of data. This command is run on the local machine.
 rsync -avz --progress /local/largefile user@remote:/remote/path/
 # -a  : Archive mode (preserves permissions, timestamps, symbolic links, etc.).
 # -v  : Verbose output (shows transfer details).
@@ -142,20 +142,9 @@ rsync -avz --progress /local/largefile user@remote:/remote/path/
 # --append: Adds new data to an incomplete file without verifying existing data.  
 # --append-verify: Verifies existing data before appending new data, useful for large files.
 
-# to resume the transfer, execute the same command but adding the partial parameter
+# to resume the transfer with rsync, execute the same command but adding the partial parameter
 
 ```
-
-Rsync:
-
-One of the features of rsync is its ability to resume file transfers from where they were interrupted. This is especially useful for large file transfers that may take hours or when network connections are unstable.
-
---partial: if the transfer is interrupted, the next time we run the same command, rsync will compare the partially transferred file on the remote machine with the source file and resume from the point where the transfer stopped. By default (without partial), rsync may delete partially transferred files when a transfer is interrupted.
-
-Append and Verification of Transfer
---append: if we are confident that the data already transferred is intact, to resume the transfer by appending the new data to the partially transferred file
---append-verify: useful for large, sequential files where the transferred portion remains unchanged. ensuring the already transferred portion is correct before appending the new data:
-
 
 Symbolic links and hard links:
 * symbolic links point to the name or path of the original file, not to the file's data (inode) directly. If the original file is deleted or moved, the symbolic link becomes broken, since it depends on the file's location and path. On the same note, symlinks can link to directories (e.g., shortcuts). Best for creating shortcuts or links across different locations.
