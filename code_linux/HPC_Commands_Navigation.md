@@ -128,9 +128,9 @@ rm <file>
 rm -r <folder>
 
 # scp (secure copy protocol) copy files from the local machine to a remote server and vice versa. This command is run on the local machine
-scp source/absolute/path/file user@server:destination/absolute/path/file    # from local to remote
-scp user@server:source/absolute/path/file destination/absolute/path/file    # from remote to local
-scp -r source/absolute/path/file user@server:destination/absolute/path/file    # to copy a directory
+scp /source/absolute/path/file user@server:/destination/absolute/path/file    # from local to remote
+scp user@server:/source/absolute/path/file /destination/absolute/path/file    # from remote to local
+scp -r /source/absolute/path/file user@server:/destination/absolute/path/file    # to copy a directory
 
 # rsync (remote sync): sync files between remote and local servers and allows for transfer resuming if the process is interrumped. Useful for large files or large amount of data. This command is run on the local machine.
 rsync -avz --progress /local/largefile user@remote:/remote/path/
