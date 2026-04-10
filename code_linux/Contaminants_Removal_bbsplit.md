@@ -104,4 +104,5 @@ References:
 
 https://github.com/BioInfoTools/BBMap/blob/master/sh/bbsplit.sh
 https://www.seqanswers.com/forum/bioinformatics/bioinformatics-aa/35881-introducing-bbsplit-read-binning-tool-for-metagenomes-and-contaminated-libraries
+https://www.seqanswers.com/forum/bioinformatics/bioinformatics-aa/37175-introducing-removehuman-human-contaminant-removal?t=42552
 https://portal.nersc.gov/dna/microbial/assembly/bushnell/README.txt
